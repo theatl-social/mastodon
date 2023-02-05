@@ -17,7 +17,7 @@ module Mastodon
     end
 
     def flags
-      ''
+      'theatlsocial'
     end
 
     def suffix
@@ -29,11 +29,11 @@ module Mastodon
     end
 
     def to_s
-      [to_a.join('.'), flags, suffix].join
+      [to_a.join('-'), flags, suffix].join
     end
 
     def repository
-      ENV.fetch('GITHUB_REPOSITORY', 'mastodon/mastodon')
+      ENV.fetch('GITHUB_REPOSITORY', 'theatl-social/mastodon')
     end
 
     def source_base_url
