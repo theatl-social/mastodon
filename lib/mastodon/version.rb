@@ -17,7 +17,7 @@ module Mastodon
     end
 
     def flags
-      'theatlsocial'
+      '-theatlsocial'
     end
 
     def suffix
@@ -29,7 +29,7 @@ module Mastodon
     end
 
     def to_s
-      [to_a.join('-'), flags, suffix].join
+      [to_a.join('.'), flags, suffix].join
     end
 
     def repository
