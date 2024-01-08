@@ -98,6 +98,10 @@ class REST::V1::InstanceSerializer < ActiveModel::Serializer
     UserRole.everyone.can?(:invite_users)
   end
 
+  def max_toot_chars  
+    1000 
+  end  
+
   private
 
   def instance_presenter
