@@ -86,20 +86,24 @@ RUN apt-get update && \
 COPY --chown=mastodon:mastodon . /opt/mastodon
 COPY --chown=mastodon:mastodon --from=build /opt/mastodon /opt/mastodon
 
-ENV RAILS_ENV="production"
-ENV NODE_ENV="production" 
-ENV RAILS_SERVE_STATIC_FILES="true"
-ENV BIND="0.0.0.0" 
+# ENV RAILS_ENV="production" \
+#     NODE_ENV="production" \
+#     RAILS_SERVE_STATIC_FILES="true" \
+#     BIND="0.0.0.0" \
 #     MASTODON_VERSION_PRERELEASE="${MASTODON_VERSION_PRERELEASE}" \
 #     MASTODON_VERSION_METADATA="${MASTODON_VERSION_METADATA}"
 
+# # Set the run user
 # # Set the run user
 USER mastodon
 WORKDIR /opt/mastodon
 
 # # Precompile assets
 # RUN OTP_SECRET=precompile_placeholder SECRET_KEY_BASE=precompile_placeholder rails assets:precompile
+# # Precompile assets
+# RUN OTP_SECRET=precompile_placeholder SECRET_KEY_BASE=precompile_placeholder rails assets:precompile
 
+# # Set the work dir and the container entry point
 # # Set the work dir and the container entry point
 ENTRYPOINT ["/usr/bin/tini", "--"]
 EXPOSE 3000 4000
