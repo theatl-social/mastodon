@@ -2,7 +2,7 @@
 # This needs to be bookworm-slim because the Ruby image is built on bookworm-slim
 ARG NODE_VERSION="20.6-bookworm-slim"
 
-FROM --platform=x86_64 ghcr.io/moritzheiber/ruby-jemalloc:3.2.2-slim as ruby
+FROM --platform=x86_64 ghcr.io/moritzheiber/ruby-jemalloc:3.2.3-slim as ruby
 FROM --platform=amd64 node:${NODE_VERSION} as build
 
 COPY --link --from=ruby /opt/ruby /opt/ruby
@@ -90,16 +90,24 @@ COPY --chown=mastodon:mastodon --from=build /opt/mastodon /opt/mastodon
 #     NODE_ENV="production" \
 #     RAILS_SERVE_STATIC_FILES="true" \
 #     BIND="0.0.0.0" \
+# ENV RAILS_ENV="production" \
+#     NODE_ENV="production" \
+#     RAILS_SERVE_STATIC_FILES="true" \
+#     BIND="0.0.0.0" \
 #     MASTODON_VERSION_PRERELEASE="${MASTODON_VERSION_PRERELEASE}" \
 #     MASTODON_VERSION_METADATA="${MASTODON_VERSION_METADATA}"
 
+# # Set the run user
 # # Set the run user
 USER mastodon
 WORKDIR /opt/mastodon
 
 # # Precompile assets
 # RUN OTP_SECRET=precompile_placeholder SECRET_KEY_BASE=precompile_placeholder rails assets:precompile
+# # Precompile assets
+# RUN OTP_SECRET=precompile_placeholder SECRET_KEY_BASE=precompile_placeholder rails assets:precompile
 
+# # Set the work dir and the container entry point
 # # Set the work dir and the container entry point
 ENTRYPOINT ["/usr/bin/tini", "--"]
 EXPOSE 3000 4000
