@@ -89,6 +89,11 @@ class REST::InstanceSerializer < ActiveModel::Serializer
     }
   end
 
+
+  def max_toot_chars  
+    1000 
+  end  
+
   private
 
   def registrations_enabled?
