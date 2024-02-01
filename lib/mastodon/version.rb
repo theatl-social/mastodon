@@ -15,6 +15,7 @@ module Mastodon
     def patch
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       8-theatlsocial-20240310
 =======
       '3-theatlsocial-20241007'
@@ -22,6 +23,9 @@ module Mastodon
 =======
       '3-theatlsocial-20240114'
 >>>>>>> 3a180d266 (fixed version)
+=======
+      5
+>>>>>>> 60a145d6d (updating patch version)
     end
 
     def default_prerelease
