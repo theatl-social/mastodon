@@ -2,8 +2,8 @@
 # This needs to be bookworm-slim because the Ruby image is built on bookworm-slim
 ARG NODE_VERSION="20.6-bookworm-slim"
 
-FROM --platform=x86_64 ghcr.io/moritzheiber/ruby-jemalloc:3.2.3-slim as ruby
-FROM node:${NODE_VERSION} as build
+FROM --platform=x86_64 ghcr.io/moritzheiber/ruby-jemalloc:3.2.2-slim as ruby
+FROM --platform=amd64 node:${NODE_VERSION} as build
 
 COPY --link --from=ruby /opt/ruby /opt/ruby
 
@@ -40,7 +40,7 @@ RUN apt-get update && \
     yarn install --pure-lockfile --production --network-timeout 600000 && \
     yarn cache clean
 
-FROM node:${NODE_VERSION}
+FROM --platform=linux/amd64 node:${NODE_VERSION}
 
 # Use those args to specify your own version flags & suffixes
 ARG MASTODON_VERSION_PRERELEASE=""
@@ -86,10 +86,10 @@ RUN apt-get update && \
 COPY --chown=mastodon:mastodon . /opt/mastodon
 COPY --chown=mastodon:mastodon --from=build /opt/mastodon /opt/mastodon
 
-ENV RAILS_ENV="production"
-ENV NODE_ENV="production" 
-ENV RAILS_SERVE_STATIC_FILES="true"
-ENV BIND="0.0.0.0" 
+# ENV RAILS_ENV="production" \
+#     NODE_ENV="production" \
+#     RAILS_SERVE_STATIC_FILES="true" \
+#     BIND="0.0.0.0" \
 #     MASTODON_VERSION_PRERELEASE="${MASTODON_VERSION_PRERELEASE}" \
 #     MASTODON_VERSION_METADATA="${MASTODON_VERSION_METADATA}"
 
