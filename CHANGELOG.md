@@ -151,6 +151,8 @@ All notable changes to this project will be documented in this file.
   For these reasons, this behavior is now locked under the `ALLOW_UNSAFE_AUTH_PROVIDER_REATTACH` environment variable.
   In addition, regardless of this environment variable, Mastodon will refuse to attach two identities from the same authentication provider to the same account.
 
+=======
+>>>>>>> 60a145d6d (updating patch version)
 ## [4.2.5] - 2024-02-01
 
 ### Security
