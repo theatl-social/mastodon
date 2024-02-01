@@ -40,7 +40,7 @@ RUN apt-get update && \
     yarn install --pure-lockfile --production --network-timeout 600000 && \
     yarn cache clean
 
-FROM node:${NODE_VERSION}
+FROM --platform=linux/amd64 node:${NODE_VERSION}
 
 # Use those args to specify your own version flags & suffixes
 ARG MASTODON_VERSION_PRERELEASE=""
