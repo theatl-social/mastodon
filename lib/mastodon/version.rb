@@ -13,11 +13,7 @@ module Mastodon
     end
 
     def patch
-<<<<<<< HEAD
-      10-theatlsocial-20240704
-=======
-      3-theatlsocial-20240114
->>>>>>> 83504cd69 (ready to test)
+      5
     end
 
     def default_prerelease
