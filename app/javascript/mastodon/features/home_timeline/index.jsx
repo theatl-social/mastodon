@@ -186,9 +186,9 @@ class HomeTimeline extends PureComponent {
       );
     }
 
-    if (criticalUpdatesPending) {
-      banners.push(<CriticalUpdateBanner key='critical-update-banner' />);
-    }
+    // if (criticalUpdatesPending) {
+    //   banners.push(<CriticalUpdateBanner key='critical-update-banner' />);
+    // }
 
     if (tooSlow) {
       banners.push(<ExplorePrompt key='explore-prompt' />);
