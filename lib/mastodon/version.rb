@@ -13,7 +13,11 @@ module Mastodon
     end
 
     def patch
+<<<<<<< HEAD
       8-theatlsocial-fork.20240310
+=======
+      7
+>>>>>>> 0eb128982 (commit base version)
     end
 
     def default_prerelease
