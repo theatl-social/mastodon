@@ -13,7 +13,7 @@ module Mastodon
     end
 
     def patch
-      "7.theatlsocial-fork-20240216"
+      8-theatlsocial-20240310
     end
 
     def default_prerelease
