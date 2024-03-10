@@ -15,6 +15,7 @@ module Mastodon
     def patch
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       8-theatlsocial-fork.20240310
 =======
       7
@@ -22,6 +23,9 @@ module Mastodon
 =======
       "7.theatlsocial-fork-20240216"
 >>>>>>> 5fcf0e425 (incremented version to reflect new fork branch)
+=======
+      8-theatlsocial-20240310
+>>>>>>> 7be2f3fc2 (first commit for new version branch)
     end
 
     def default_prerelease
