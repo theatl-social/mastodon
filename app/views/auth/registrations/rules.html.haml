@@ -17,13 +17,17 @@
     %p.lead= t('auth.rules.preamble', domain: site_hostname)
 
   %ol.rules-list
-    - @rules.each do |rule|
-      %li
-        .rules-list__text= rule.text
+    %li
+      .rules-list__text Users from the Metro Atlanta region and other regions of Georgia are welcome to join and will instantly receive a login. New users from outside the United States require a review before an account is granted.
+    %li
+      .rules-list__text After you're all set up, take a look at our server rules to review our general guidelines for posting and content.
+    %li
+      .rules-list__text There is no cost to join or use the service! However, this server is financially supported by its users. If you enjoy using the service, consider a financial contribution to support operations.
 
   .stacked-actions
     - accept_path = @invite_code.present? ? public_invite_url(invite_code: @invite_code, accept: @accept_token) : new_user_registration_path(accept: @accept_token)
     = link_to t('auth.rules.accept'), accept_path, class: 'button'
     = link_to t('auth.rules.back'), root_path, class: 'button button-tertiary'
 
-.form-footer= render 'auth/shared/links'
+.form-footer
+  = render 'auth/shared/links'
