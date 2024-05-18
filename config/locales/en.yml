@@ -1081,12 +1081,12 @@ en:
     resend_confirmation: Resend confirmation link
     reset_password: Reset password
     rules:
-      accept: Accept
+      accept: Next
       back: Back
       invited_by: 'You can join %{domain} thanks to the invitation you have received from:'
-      preamble: These are set and enforced by the %{domain} moderators.
+      preamble: Sign-up is quick and easy with three steps. First, take a look at our guidelines to proceed.
       preamble_invited: Before you proceed, please consider the ground rules set by the moderators of %{domain}.
-      title: Some ground rules.
+      title: Welcome to theATL.social!
       title_invited: You've been invited.
     security: Security
     set_new_password: Set new password
@@ -1101,7 +1101,7 @@ en:
       title: Login to %{domain}
     sign_up:
       manual_review: Sign-ups on %{domain} go through manual review by our moderators. To help us process your registration, write a bit about yourself and why you want an account on %{domain}.
-      preamble: With an account on this Mastodon server, you'll be able to follow any other person on the network, regardless of where their account is hosted.
+      preamble: With an account on this server, you'll be able to follow any other person on other servers in the Mastodon network, regardless of where their account is hosted.
       title: Let's get you set up on %{domain}.
     status:
       account_status: Account status
