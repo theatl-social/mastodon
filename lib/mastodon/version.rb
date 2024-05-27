@@ -13,7 +13,7 @@ module Mastodon
     end
 
     def patch
-      '8-theatlsocial-20240518'
+      '8-theatlsocial-20240526'
 
     end
 
