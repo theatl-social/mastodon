@@ -158,4 +158,36 @@ class Api::V1::StatusesController < Api::BaseController
   def pagination_params(core_params)
     params.slice(:limit).permit(:limit).merge(core_params)
   end
+
+  def push_to_feed_or_list
+    @status = Status.find_by(id: params[:id])
+    if @status.nil?
+      render json: { error: 'Post not found' }, status: 404
+      return
+    end
+
+    authorize @status, :show?
+
+    if current_user.role == 'superbot'
+      target_user = User.find_by(id: params[:user_id])
+      if target_user.nil?
+        render json: { error: 'User not found' }, status: 404
+        return
+      end
+      if params[:list_id].present?
+        @list = List.find_by(id: params[:list_id])
+        if @list.nil?
+          render json: { error: 'List not found' }, status: 404
+          return
+        end
+        authorize @list, :push?, target_user
+        @list.statuses << @status
+      else
+        target_user.home_feed.insert_status(@status)
+      end
+      render json: @status, serializer: REST::StatusSerializer
+    else
+      render json: { error: 'Unauthorized' }, status: 403
+    end
+  end
 end

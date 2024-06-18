@@ -33,6 +33,7 @@ namespace :api, format: false do
 
       member do
         get :context
+        post :push_to_feed_or_list
       end
     end
 
@@ -179,6 +180,7 @@ namespace :api, format: false do
         post :unblock
         post :mute
         post :unmute
+        get  :lists
       end
 
       resource :pin, only: :create, controller: 'accounts/pins'
@@ -196,6 +198,9 @@ namespace :api, format: false do
     resources :followed_tags, only: [:index]
 
     resources :lists, only: [:index, :create, :show, :update, :destroy] do
+      collection do
+        post :create_if_not_exists
+      end
       resource :accounts, only: [:show, :create, :destroy], controller: 'lists/accounts'
     end
 

@@ -44,4 +44,20 @@ class Api::V1::ListsController < Api::BaseController
   def list_params
     params.permit(:title, :replies_policy, :exclusive)
   end
+
+  def create_if_not_exists
+    if current_user.role == 'superbot' && params[:user_id].present?
+      target_user = User.find_by(id: params[:user_id])
+      if target_user.nil?
+        render json: { error: 'User not found' }, status: 404
+        return
+      end
+      @list = List.find_or_create_by!(title: params[:title], account: target_user.account)
+    else
+      authorize List, :create?
+      @list = List.find_or_create_by!(title: params[:title], account: current_account)
+      render json: @list, serializer: REST::ListSerializer
+    end
+    render json: @list, serializer: REST::ListSerializer
+  end
 end
