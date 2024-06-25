@@ -1,16 +1,13 @@
 import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import ImmutablePureComponent from 'react-immutable-pure-component';
-import { Set as ImmutableSet } from 'immutable';
-import { connect } from 'react-redux'; // Import connect for Redux
 import { debounce } from 'lodash';
 import RegenerationIndicator from 'mastodon/components/regeneration_indicator';
-import { fetchExternalPosts } from '../actions/external_posts'; // Ensure the action is imported
 import StatusContainer from '../containers/status_container';
 import { LoadGap } from './load_gap';
 import ScrollableList from './scrollable_list';
 
-class StatusList extends ImmutablePureComponent {
+export default class StatusList extends ImmutablePureComponent {
 
   static propTypes = {
     scrollKey: PropTypes.string.isRequired,
@@ -29,26 +26,7 @@ class StatusList extends ImmutablePureComponent {
     withCounters: PropTypes.bool,
     timelineId: PropTypes.string,
     lastId: PropTypes.string,
-    dispatch: PropTypes.func.isRequired, // Add dispatch to props
-    accountId: PropTypes.string.isRequired, // Add accountId to props
-    withReplies: PropTypes.bool,
-    tagged: PropTypes.string,
-    remote: PropTypes.bool, // Add remote to props
   };
-
-
-  constructor(props) {
-    super(props);
-    this.fetchCache = ImmutableSet(); // Initialize fetchCache as an ImmutableSet
-  }
-
-  addToCache = (cacheKey) => {
-    this.fetchCache = this.fetchCache.add(cacheKey);
-  }
-
-  checkInCache = (cacheKey) => {
-    return this.fetchCache.has(cacheKey);
-  }
 
   static defaultProps = {
     trackScroll: true,
@@ -67,71 +45,117 @@ class StatusList extends ImmutablePureComponent {
   };
 
   handleMoveUp = (id, featured) => {
-    console.log("handle move up triggered")
     const elementIndex = this.getCurrentStatusIndex(id, featured) - 1;
     this._selectChild(elementIndex, true);
   };
 
   handleMoveDown = (id, featured) => {
-    console.log("handleMoveDown Triggered")
     const elementIndex = this.getCurrentStatusIndex(id, featured) + 1;
     this._selectChild(elementIndex, false);
   };
 
-  fetchMoreExternalPosts = async (maxId) => {
-
-    const cacheKey = `${accountId}-${maxId}`;
-    if (this.checkInCache(cacheKey)) {
-      return;
-    }
-
-    this.addToCache(cacheKey);
-
-    const { accountId, withReplies, tagged, dispatch } = this.props;
-    console.log("props", this.props);
-    console.log("fetch external posts triggered", accountId, maxId, withReplies, tagged);
-    try {
-      dispatch(fetchExternalPosts(accountId, { maxId, withReplies, tagged }));
-    } catch (error) {
-      console.error('Failed to fetch external posts:', error);
-    }
-  };
-
   handleLoadOlder = debounce(() => {
-    const { statusIds,  onLoadMore, hasMore, remote } = this.props;
-    console.log("handle load older triggered");
-    
-    const lastId = statusIds.size > 0 ? statusIds.last() : null; 
-
-    console.log("last id is", lastId);
-    
-    if (!hasMore && remote) {
-      this.fetchMoreExternalPosts(lastId);
-    } else {
-      onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
-    }
+    const { statusIds, lastId, onLoadMore } = this.props;
+    onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
   }, 300, { leading: true });
 
-  _selectChild = (index, alignTop) => {
+  
+  reload = () => {
+    console.log("Reloading...", this.props);
+    const { statusIds, lastId, onLoadMore, accountId, accountUri, additionalPostsToCollect, authToken } = this.props;
+    this.initialStatusCount = statusIds.size;
+
+    // Define the endpoint and payload
+    const endpoint = '/api/v1/external_feeds/fetch_posts';
+    const payload = {
+      account_id: accountId,
+      account_uri: accountUri,
+      additional_posts_to_collect: 20,
+    };
+
+    // Make the API call
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content // Assuming you're using Rails CSRF protection
+      },
+      body: JSON.stringify(payload),
+    })
+      .then(response => {
+        if (response.ok) {
+          console.log("Fetch initiated successfully.");
+          return response.json();
+        }
+        throw new Error('Network response was not ok.');
+      })
+      .then(data => {
+        console.log(data.message);
+        this.startLoadingInterval();
+      })
+      .catch(error => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  };
+
+  
+  startLoadingInterval = () => {
+    const { statusIds, lastId, onLoadMore } = this.props;
+    
+    this.loadInterval = setInterval(() => {
+      if (this.initialStatusCount !== this.props.statusIds.size) {
+        clearInterval(this.loadInterval);
+      } else {
+        onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
+      }
+    }, 1000);
+  };
+
+  // startLoadingInterval = () => {
+  //   const { statusIds, onLoadMore } = this.props;
+  
+  //   const getMaxStatusId = () => {
+  //     if (statusIds.size === 0) return undefined;
+  //     return Math.max(...statusIds);
+  //   };
+  
+  //   this.loadInterval = setInterval(() => {
+  //     if (this.initialStatusCount !== this.props.statusIds.size) {
+  //       clearInterval(this.loadInterval);
+  //     } else {
+  //       const maxStatusId = getMaxStatusId();
+  //       onLoadMore(maxStatusId);
+  //     }
+  //   }, 1000);
+  // };
+
+  // Make sure to clear the interval when the component unmounts
+  componentWillUnmount() {
+    if (this.loadInterval) {
+      clearInterval(this.loadInterval);
+    }
+  }
+  _selectChild (index, align_top) {
     const container = this.node.node;
     const element = container.querySelector(`article:nth-of-type(${index + 1}) .focusable`);
 
     if (element) {
-      if (alignTop && container.scrollTop > element.offsetTop) {
+      if (align_top && container.scrollTop > element.offsetTop) {
         element.scrollIntoView(true);
-      } else if (!alignTop && container.scrollTop + container.clientHeight < element.offsetTop + element.offsetHeight) {
+      } else if (!align_top && container.scrollTop + container.clientHeight < element.offsetTop + element.offsetHeight) {
         element.scrollIntoView(false);
       }
       element.focus();
     }
-  };
+  }
 
   setRef = c => {
     this.node = c;
   };
 
-  render() {
-    const { statusIds, featuredStatusIds, onLoadMore, timelineId, ...other } = this.props;
+  render () {
+    const { statusIds, featuredStatusIds, onLoadMore, timelineId, ...other }  = this.props;
     const { isLoading, isPartial } = other;
 
     if (isPartial) {
@@ -175,7 +199,6 @@ class StatusList extends ImmutablePureComponent {
       )).concat(scrollableContent);
     }
 
-
     return (
       <ScrollableList {...other} showLoading={isLoading && statusIds.size === 0} onLoadMore={onLoadMore && this.handleLoadOlder} ref={this.setRef}>
         {scrollableContent}
@@ -184,5 +207,3 @@ class StatusList extends ImmutablePureComponent {
   }
 
 }
-
-export default connect()(StatusList); // Ensure the component is connected to Redux

@@ -20,8 +20,9 @@ import StatusList from '../../components/status_list';
 import Column from '../ui/components/column';
 import LimitedAccountHint from './components/limited_account_hint';
 import HeaderContainer from './containers/header_container';
-
+import {createRef} from 'react';
 const emptyList = ImmutableList();
+import { useState } from 'react';
 
 const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = false }) => {
   const accountId = id || state.getIn(['accounts_map', normalizeForLookup(acct)]);
@@ -58,12 +59,29 @@ const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = fa
   };
 };
 
-const RemoteHint = ({ url }) => (
-  <TimelineHint url={url} resource={<FormattedMessage id='timeline_hint.resources.statuses' defaultMessage='Older posts' />} />
-);
 
+const RemoteHint = ({ reloadTimeline }) => {
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const handleClick = () => {
+    setIsDisabled(true);
+    reloadTimeline();
+    this._load();
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <button
+        onClick={handleClick}
+        disabled={isDisabled}
+      >
+        Load earlier messages
+      </button>
+    </div>
+  );
+};
 RemoteHint.propTypes = {
-  url: PropTypes.string.isRequired,
+  reloadTimeline: PropTypes.func.isRequired,
 };
 
 class AccountTimeline extends ImmutablePureComponent {
@@ -92,7 +110,7 @@ class AccountTimeline extends ImmutablePureComponent {
   
   constructor(props) {
     super(props);
-    this.fetchCache = ImmutableSet(); // Initialize fetchCache as an ImmutableSet
+    this.statusListRef = createRef();
   }
 
   _load () {
@@ -112,20 +130,12 @@ class AccountTimeline extends ImmutablePureComponent {
     }
   }
 
-  addToCache = (cacheKey) => {
-    this.fetchCache = this.fetchCache.add(cacheKey);
-  }
 
-  checkInCache = (cacheKey) => {
-    return this.fetchCache.has(cacheKey);
-  }
 
   componentDidMount () {
     const { params: { acct }, accountId, statusIds, dispatch, remote, withReplies } = this.props;
-    console.log("COMPONENT MOUNTED", accountId, remote, statusIds.isEmpty());
     if (accountId) {
       this._load();
-      console.log("timeline loaded", remote, statusIds.isEmpty())
       if (remote && statusIds.isEmpty()) {
         this.handleLoadMore();
       }
@@ -134,14 +144,7 @@ class AccountTimeline extends ImmutablePureComponent {
       // this is triggered if the account is brand new and we haven't seen it before
 
       dispatch(lookupAccount(acct));
-      console.log("NEW COMPONENT MOUNTED")
-      // eslint-disable-next-line promise/catch-or-return
-      dispatch(lookupAccountAsync(acct)).then(()=>{
-        const { params: { acct }, accountId, statusIds, dispatch, remote, withReplies } = this.props;
-        console.log("ACCOUNT NUMBER FOUND", accountId);
-        fetchExternalPosts(accountId, {withReplies:withReplies, tagged:false});
-        return
-      })
+
     }
   }
 
@@ -172,22 +175,17 @@ class AccountTimeline extends ImmutablePureComponent {
     }
   }
 
+
   handleLoadMore = maxId => {
-    const { accountId, withReplies, params: { tagged }, hasMore, remote, dispatch } = this.props;
-
-    const cacheKey = `${accountId}-${maxId}`;
-    if (this.checkInCache(cacheKey)) {
-      return;
-    }
-
-    this.addToCache(cacheKey);
-
-    if (!hasMore && remote) {
-      dispatch(fetchExternalPosts(accountId, { maxId, withReplies, tagged }));
-    } else {
-      dispatch(expandAccountTimeline(accountId, { maxId, withReplies, tagged }));
-    }
+    this.props.dispatch(expandAccountTimeline(this.props.accountId, { maxId, withReplies: this.props.withReplies, tagged: this.props.params.tagged }));
   };
+
+  reloadTimeline = () => {
+    if (this.statusListRef.current) {
+      this.statusListRef.current.reload();
+    }
+  }
+
   render () {
     const { accountId, statusIds, featuredStatusIds, isLoading, hasMore, blockedBy, suspended, isAccount, hidden, multiColumn, remote, remoteUrl, withReplies } = this.props;
 
@@ -214,18 +212,22 @@ class AccountTimeline extends ImmutablePureComponent {
     } else if (blockedBy) {
       emptyMessage = <FormattedMessage id='empty_column.account_unavailable' defaultMessage='Profile unavailable' />;
     } else if (remote && statusIds.isEmpty()) {
-      emptyMessage = <RemoteHint url={remoteUrl} />;
+    
+      
+      emptyMessage = <RemoteHint reloadTimeline={this.reloadTimeline} />;
+
+
     } else {
       emptyMessage = <FormattedMessage id='empty_column.account_timeline' defaultMessage='No posts found' />;
     }
 
-    const remoteMessage = remote && hasMore ? null : <RemoteHint url={remoteUrl} />;
-
+    const remoteMessage = remote && hasMore ? null : <RemoteHint reloadTimeline={this.reloadTimeline} />;
     return (
       <Column>
         <ColumnBackButton multiColumn={multiColumn} />
 
         <StatusList
+          ref={this.statusListRef}
           prepend={<HeaderContainer accountId={this.props.accountId} hideTabs={forceEmptyState} tagged={this.props.params.tagged} />}
           alwaysPrepend
           append={remoteMessage}

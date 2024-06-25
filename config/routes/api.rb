@@ -37,13 +37,16 @@ namespace :api, format: false do
       end
     end
 
-    get 'fetch_external_posts', to: 'external_posts#fetch_external_posts'
+
     namespace :timelines do
       resource :home, only: :show, controller: :home
       resource :public, only: :show, controller: :public
       resources :tag, only: :show
       resources :list, only: :show
     end
+
+    post 'external_feeds/fetch_posts', to: 'external_feeds#fetch_posts'
+
 
     get '/streaming', to: 'streaming#index'
     get '/streaming/(*any)', to: 'streaming#index'

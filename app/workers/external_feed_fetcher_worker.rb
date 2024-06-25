@@ -1,12 +1,10 @@
-# frozen_string_literal: true
-
+# app/workers/external_feed_fetcher_worker.rb
 class ExternalFeedFetcherWorker
   include Sidekiq::Worker
-  MAX_RETRIES = 5
-  BASE_INTERVAL = 1
 
-  def perform(account_id, account_uri)
+  def perform(account_id, additional_posts_to_collect)
     account = Account.find(account_id)
-    ExternalFeedService.new(account, account_uri).fetch_and_store_posts
+    service = ExternalFeedService.new(account_id, additional_posts_to_collect)
+    service.fetch_and_store_posts
   end
 end
