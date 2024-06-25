@@ -60,26 +60,49 @@ const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = fa
 };
 
 
-const RemoteHint = ({ reloadTimeline }) => {
+
+
+const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
   const [isDisabled, setIsDisabled] = useState(false);
+  const [buttonText, setButtonText] = useState('Load more posts');
 
   const handleClick = () => {
     setIsDisabled(true);
-    reloadTimeline();
-    this._load();
+    setButtonText('Loading...');
+    reloadHandler();
+
+    const maxId = Math.max(...statusIds);
+
+    handleLoadMore(maxId);
+
+    const interval = setInterval(() => {
+      handleLoadMore(maxId);
+    }, 2500);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setIsDisabled(false);
+      setButtonText('Load more posts');
+    }, 10000);
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '10px', margin: '10px' }}>
       <button
         onClick={handleClick}
         disabled={isDisabled}
       >
-        Load earlier messages
+        {buttonText}
       </button>
     </div>
   );
 };
+
+RemoteHint.propTypes = {
+  statusIds: PropTypes.arrayOf(PropTypes.number).isRequired,
+  handleLoadMore: PropTypes.func.isRequired,
+};
+
 RemoteHint.propTypes = {
   reloadTimeline: PropTypes.func.isRequired,
 };
@@ -214,14 +237,14 @@ class AccountTimeline extends ImmutablePureComponent {
     } else if (remote && statusIds.isEmpty()) {
     
       
-      emptyMessage = <RemoteHint reloadTimeline={this.reloadTimeline} />;
+      emptyMessage = <RemoteHint handleLoadMore={this.handleLoadMore} statusIds={this.props.statusIds} reloadHandler={this.reloadTimeline} />;
 
 
     } else {
       emptyMessage = <FormattedMessage id='empty_column.account_timeline' defaultMessage='No posts found' />;
     }
 
-    const remoteMessage = remote && hasMore ? null : <RemoteHint reloadTimeline={this.reloadTimeline} />;
+    const remoteMessage = remote && hasMore ? null : <RemoteHint handleLoadMore={this.handleLoadMore} statusIds={this.props.statusIds} reloadHandler={this.reloadTimeline} />;;
     return (
       <Column>
         <ColumnBackButton multiColumn={multiColumn} />
