@@ -37,6 +37,7 @@ namespace :api, format: false do
       end
     end
 
+    get 'fetch_external_posts', to: 'external_posts#fetch_external_posts'
     namespace :timelines do
       resource :home, only: :show, controller: :home
       resource :public, only: :show, controller: :public

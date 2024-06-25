@@ -222,17 +222,13 @@ export default function timelines(state = initialState, action) {
         initialTimeline,
         map => map.set('isPartial', true).set('items', ImmutableList()).set('pendingItems', ImmutableList()).set('unread', 0),
       );
-      case FETCH_EXTERNAL_POSTS_SUCCESS:
-        const { accountId, posts, hasMore } = action.payload;
-        const accountKey = `account:${accountId}`;
-        return {
-          ...state,
-          [accountKey]: {
-            ...state[accountKey],
-            items: state[accountKey].items.concat(posts),
-            hasMore: hasMore,
-          },
-        };
+    case FETCH_EXTERNAL_POSTS_SUCCESS:
+      return {
+        ...state,
+        items: state.items.concat(action.posts),
+        isLoading: false,
+        hasMore: action.posts.length > 0, // Determine if there are more posts to load
+      };
     default:
       return state;
   }

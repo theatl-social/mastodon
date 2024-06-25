@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { List as ImmutableList } from 'immutable';
+import { Set as ImmutableSet } from 'immutable';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import ImmutablePureComponent from 'react-immutable-pure-component';
 import { connect } from 'react-redux';
@@ -9,7 +10,7 @@ import BundleColumnError from 'mastodon/features/ui/components/bundle_column_err
 import { me } from 'mastodon/initial_state';
 import { normalizeForLookup } from 'mastodon/reducers/accounts_map';
 import { getAccountHidden } from 'mastodon/selectors';
-import { lookupAccount, fetchAccount } from '../../actions/accounts';
+import { lookupAccount, fetchAccount, lookupAccountAsync } from '../../actions/accounts';
 import { fetchFeaturedTags } from '../../actions/featured_tags';
 import { expandAccountFeaturedTimeline, expandAccountTimeline, connectTimeline, disconnectTimeline } from '../../actions/timelines';
 import { fetchExternalPosts } from '../../actions/external_posts'; // New action import
@@ -52,6 +53,8 @@ const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = fa
     suspended: state.getIn(['accounts', accountId, 'suspended'], false),
     hidden: getAccountHidden(state, accountId),
     blockedBy: state.getIn(['relationships', accountId, 'blocked_by'], false),
+    withReplies: withReplies,
+    tagged: tagged
   };
 };
 
@@ -86,6 +89,11 @@ class AccountTimeline extends ImmutablePureComponent {
     remoteUrl: PropTypes.string,
     multiColumn: PropTypes.bool,
   };
+  
+  constructor(props) {
+    super(props);
+    this.fetchCache = ImmutableSet(); // Initialize fetchCache as an ImmutableSet
+  }
 
   _load () {
     const { accountId, withReplies, params: { tagged }, dispatch } = this.props;
@@ -104,13 +112,36 @@ class AccountTimeline extends ImmutablePureComponent {
     }
   }
 
-  componentDidMount () {
-    const { params: { acct }, accountId, dispatch } = this.props;
+  addToCache = (cacheKey) => {
+    this.fetchCache = this.fetchCache.add(cacheKey);
+  }
 
+  checkInCache = (cacheKey) => {
+    return this.fetchCache.has(cacheKey);
+  }
+
+  componentDidMount () {
+    const { params: { acct }, accountId, statusIds, dispatch, remote, withReplies } = this.props;
+    console.log("COMPONENT MOUNTED", accountId, remote, statusIds.isEmpty());
     if (accountId) {
       this._load();
+      console.log("timeline loaded", remote, statusIds.isEmpty())
+      if (remote && statusIds.isEmpty()) {
+        this.handleLoadMore();
+      }
     } else {
+
+      // this is triggered if the account is brand new and we haven't seen it before
+
       dispatch(lookupAccount(acct));
+      console.log("NEW COMPONENT MOUNTED")
+      // eslint-disable-next-line promise/catch-or-return
+      dispatch(lookupAccountAsync(acct)).then(()=>{
+        const { params: { acct }, accountId, statusIds, dispatch, remote, withReplies } = this.props;
+        console.log("ACCOUNT NUMBER FOUND", accountId);
+        fetchExternalPosts(accountId, {withReplies:withReplies, tagged:false});
+        return
+      })
     }
   }
 
@@ -144,15 +175,21 @@ class AccountTimeline extends ImmutablePureComponent {
   handleLoadMore = maxId => {
     const { accountId, withReplies, params: { tagged }, hasMore, remote, dispatch } = this.props;
 
+    const cacheKey = `${accountId}-${maxId}`;
+    if (this.checkInCache(cacheKey)) {
+      return;
+    }
+
+    this.addToCache(cacheKey);
+
     if (!hasMore && remote) {
       dispatch(fetchExternalPosts(accountId, { maxId, withReplies, tagged }));
     } else {
       dispatch(expandAccountTimeline(accountId, { maxId, withReplies, tagged }));
     }
   };
-
   render () {
-    const { accountId, statusIds, featuredStatusIds, isLoading, hasMore, blockedBy, suspended, isAccount, hidden, multiColumn, remote, remoteUrl } = this.props;
+    const { accountId, statusIds, featuredStatusIds, isLoading, hasMore, blockedBy, suspended, isAccount, hidden, multiColumn, remote, remoteUrl, withReplies } = this.props;
 
     if (isLoading && statusIds.isEmpty()) {
       return (
@@ -201,6 +238,10 @@ class AccountTimeline extends ImmutablePureComponent {
           emptyMessage={emptyMessage}
           bindToDocument={!multiColumn}
           timelineId='account'
+          remote={remote}
+          accountId={accountId} // Add the accountId prop here
+          withReplies={withReplies}
+          tagged={this.props.params.tagged}
         />
       </Column>
     );

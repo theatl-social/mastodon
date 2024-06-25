@@ -106,6 +106,19 @@ export const lookupAccount = acct => (dispatch, getState) => {
   });
 };
 
+export const lookupAccountAsync = (acct) => async (dispatch) => {
+  dispatch(lookupAccountRequest());
+  try {
+    const response = await fetch(`/api/v1/accounts/lookup?acct=${acct}`);
+    const data = await response.json();
+    dispatch(lookupAccountSuccess(data));
+    return data; // Resolve the promise with the account data
+  } catch (error) {
+    dispatch(lookupAccountFail(error));
+    throw error; // Reject the promise with the error
+  }
+};
+
 export const lookupAccountRequest = (acct) => ({
   type: ACCOUNT_LOOKUP_REQUEST,
   acct,
