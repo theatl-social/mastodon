@@ -6,6 +6,7 @@ import RegenerationIndicator from 'mastodon/components/regeneration_indicator';
 import StatusContainer from '../containers/status_container';
 import { LoadGap } from './load_gap';
 import ScrollableList from './scrollable_list';
+import * as Immutable from 'immutable';
 
 export default class StatusList extends ImmutablePureComponent {
 
@@ -32,6 +33,31 @@ export default class StatusList extends ImmutablePureComponent {
     trackScroll: true,
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      orderedStatusIds: this.combineAndSortStatusIds(props.statusIds, props.featuredStatusIds),
+    };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      this.props.statusIds !== prevProps.statusIds ||
+      this.props.featuredStatusIds !== prevProps.featuredStatusIds
+    ) {
+      this.setState({
+        orderedStatusIds: this.combineAndSortStatusIds(this.props.statusIds, this.props.featuredStatusIds),
+      });
+    }
+  }
+
+  combineAndSortStatusIds(statusIds = Immutable.List(), featuredStatusIds = Immutable.List()) {
+    const filteredStatusIds = statusIds.filter(statusId => !featuredStatusIds.includes(statusId));
+    //const sortedStatusIds = filteredStatusIds.sort((a, b) => a - b);
+    const sortedStatusIds = filteredStatusIds;
+    return featuredStatusIds.concat(sortedStatusIds);
+  }
+
   getFeaturedStatusCount = () => {
     return this.props.featuredStatusIds ? this.props.featuredStatusIds.size : 0;
   };
@@ -54,12 +80,17 @@ export default class StatusList extends ImmutablePureComponent {
     this._selectChild(elementIndex, false);
   };
 
+  // handleLoadOlder = debounce(() => {
+  //   const { statusIds, onLoadMore } = this.props;
+  //   const maxId = statusIds.size > 0 ? Math.max(...statusIds.toArray()) : undefined;
+  //   onLoadMore(maxId);
+  // }, 300, { leading: true });
+
   handleLoadOlder = debounce(() => {
     const { statusIds, lastId, onLoadMore } = this.props;
     onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
   }, 300, { leading: true });
 
-  
   reload = () => {
     console.log("Reloading...", this.props);
     const { statusIds, lastId, onLoadMore, accountId, accountUri, additionalPostsToCollect, authToken } = this.props;
@@ -79,7 +110,7 @@ export default class StatusList extends ImmutablePureComponent {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content // Assuming you're using Rails CSRF protection
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content, // Assuming you're using Rails CSRF protection
       },
       body: JSON.stringify(payload),
     })
@@ -99,36 +130,18 @@ export default class StatusList extends ImmutablePureComponent {
       });
   };
 
-  
   startLoadingInterval = () => {
-    const { statusIds, lastId, onLoadMore } = this.props;
-    
+    const { statusIds, onLoadMore } = this.props;
+
     this.loadInterval = setInterval(() => {
+      console.log("Checking for new posts...", "Initial status count:", this.initialStatusCount, "Current status count:", statusIds.size);
       if (this.initialStatusCount !== this.props.statusIds.size) {
         clearInterval(this.loadInterval);
       } else {
-        onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
+        onLoadMore();
       }
-    }, 1000);
+    }, 5000);
   };
-
-  // startLoadingInterval = () => {
-  //   const { statusIds, onLoadMore } = this.props;
-  
-  //   const getMaxStatusId = () => {
-  //     if (statusIds.size === 0) return undefined;
-  //     return Math.max(...statusIds);
-  //   };
-  
-  //   this.loadInterval = setInterval(() => {
-  //     if (this.initialStatusCount !== this.props.statusIds.size) {
-  //       clearInterval(this.loadInterval);
-  //     } else {
-  //       const maxStatusId = getMaxStatusId();
-  //       onLoadMore(maxStatusId);
-  //     }
-  //   }, 1000);
-  // };
 
   // Make sure to clear the interval when the component unmounts
   componentWillUnmount() {
@@ -136,7 +149,8 @@ export default class StatusList extends ImmutablePureComponent {
       clearInterval(this.loadInterval);
     }
   }
-  _selectChild (index, align_top) {
+
+  _selectChild(index, align_top) {
     const container = this.node.node;
     const element = container.querySelector(`article:nth-of-type(${index + 1}) .focusable`);
 
@@ -154,8 +168,8 @@ export default class StatusList extends ImmutablePureComponent {
     this.node = c;
   };
 
-  render () {
-    const { statusIds, featuredStatusIds, onLoadMore, timelineId, ...other }  = this.props;
+  render() {
+    const { statusIds, featuredStatusIds, onLoadMore, timelineId, ...other } = this.props;
     const { isLoading, isPartial } = other;
 
     if (isPartial) {
@@ -163,7 +177,7 @@ export default class StatusList extends ImmutablePureComponent {
     }
 
     let scrollableContent = (isLoading || statusIds.size > 0) ? (
-      statusIds.map((statusId, index) => statusId === null ? (
+      this.state.orderedStatusIds.map((statusId, index) => statusId === null ? (
         <LoadGap
           key={'gap:' + statusIds.get(index + 1)}
           disabled={isLoading}
@@ -200,10 +214,9 @@ export default class StatusList extends ImmutablePureComponent {
     }
 
     return (
-      <ScrollableList {...other} showLoading={isLoading && statusIds.size === 0} onLoadMore={onLoadMore && this.handleLoadOlder} ref={this.setRef}>
+      <ScrollableList {...other} fetchMoreRemote={this.reload} showLoading={isLoading && statusIds.size === 0} onLoadMore={onLoadMore && this.handleLoadOlder} ref={this.setRef}>
         {scrollableContent}
       </ScrollableList>
     );
   }
-
 }

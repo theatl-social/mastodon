@@ -2,6 +2,10 @@
 class ExternalFeedFetcherWorker
   include Sidekiq::Worker
 
+  # adding this - only one additional posts to collect for one account_id is collected at a time.
+  # TODO: include max ID too?
+  sidekiq_options unique: :until_executed, unique_args: ->(args) { [args.first] }
+
   def perform(account_id, additional_posts_to_collect)
     account = Account.find(account_id)
     service = ExternalFeedService.new(account_id, additional_posts_to_collect)

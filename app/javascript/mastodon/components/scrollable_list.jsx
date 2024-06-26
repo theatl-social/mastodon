@@ -53,6 +53,7 @@ class ScrollableList extends PureComponent {
     children: PropTypes.node,
     bindToDocument: PropTypes.bool,
     preventScroll: PropTypes.bool,
+    fetchMoreRemote: PropTypes.func
   };
 
   static defaultProps = {
@@ -60,6 +61,7 @@ class ScrollableList extends PureComponent {
   };
 
   state = {
+    reloadKey: 0,
     fullscreen: null,
     cachedMediaWidth: 250, // Default media/card width using default Mastodon theme
   };
@@ -73,7 +75,7 @@ class ScrollableList extends PureComponent {
       const clientHeight = this.getClientHeight();
       const offset = scrollHeight - scrollTop - clientHeight;
 
-      if (scrollTop > 0 && offset < 400 && this.props.onLoadMore && this.props.hasMore && !this.props.isLoading) {
+      if (scrollTop > 0 && offset < 400 && !this.props.isLoading) {
         this.props.onLoadMore();
       }
 
@@ -153,7 +155,7 @@ class ScrollableList extends PureComponent {
     this.scrollToTopOnMouseIdle = false;
   };
 
-  componentDidMount () {
+  componentDidMount() {
     this.attachScrollListener();
     this.attachIntersectionObserver();
 
@@ -189,7 +191,7 @@ class ScrollableList extends PureComponent {
     this.setScrollTop(newScrollTop);
   };
 
-  getSnapshotBeforeUpdate (prevProps) {
+  getSnapshotBeforeUpdate(prevProps) {
     const someItemInserted = Children.count(prevProps.children) > 0 &&
       Children.count(prevProps.children) < Children.count(this.props.children) &&
       this.getFirstChildKey(prevProps) !== this.getFirstChildKey(this.props);
@@ -202,7 +204,7 @@ class ScrollableList extends PureComponent {
     }
   }
 
-  componentDidUpdate (prevProps, prevState, snapshot) {
+  componentDidUpdate(prevProps, prevState, snapshot) {
     // Reset the scroll position when a new child comes in in order not to
     // jerk the scrollbar around if you're already scrolled down the page.
     if (snapshot !== null) {
@@ -216,7 +218,7 @@ class ScrollableList extends PureComponent {
     }
   };
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     this.clearMouseIdleTimer();
     this.detachScrollListener();
     this.detachIntersectionObserver();
@@ -228,7 +230,7 @@ class ScrollableList extends PureComponent {
     this.setState({ fullscreen: isFullscreen() });
   };
 
-  attachIntersectionObserver () {
+  attachIntersectionObserver() {
     let nodeOptions = {
       root: this.node,
       rootMargin: '300% 0px',
@@ -238,21 +240,21 @@ class ScrollableList extends PureComponent {
       .connect(this.props.bindToDocument ? {} : nodeOptions);
   }
 
-  detachIntersectionObserver () {
+  detachIntersectionObserver() {
     this.intersectionObserverWrapper.disconnect();
   }
 
-  attachScrollListener () {
+  attachScrollListener() {
     if (this.props.bindToDocument) {
       document.addEventListener('scroll', this.handleScroll);
-      document.addEventListener('wheel', this.handleWheel,  listenerOptions);
+      document.addEventListener('wheel', this.handleWheel, listenerOptions);
     } else {
       this.node.addEventListener('scroll', this.handleScroll);
       this.node.addEventListener('wheel', this.handleWheel, listenerOptions);
     }
   }
 
-  detachScrollListener () {
+  detachScrollListener() {
     if (this.props.bindToDocument) {
       document.removeEventListener('scroll', this.handleScroll);
       document.removeEventListener('wheel', this.handleWheel, listenerOptions);
@@ -262,9 +264,9 @@ class ScrollableList extends PureComponent {
     }
   }
 
-  getFirstChildKey (props) {
+  getFirstChildKey(props) {
     const { children } = props;
-    let firstChild     = children;
+    let firstChild = children;
 
     if (children instanceof ImmutableList) {
       firstChild = children.get(0);
@@ -296,13 +298,20 @@ class ScrollableList extends PureComponent {
     this.mouseMovedRecently = true;
   };
 
-  render () {
+  refreshComponent = () => {
+    this.setState(prevState => ({
+      reloadKey: prevState.reloadKey + 1,
+    }));
+  };
+
+  render() {
     const { children, scrollKey, trackScroll, showLoading, isLoading, hasMore, numPending, prepend, alwaysPrepend, append, emptyMessage, onLoadMore } = this.props;
     const { fullscreen } = this.state;
     const childrenCount = Children.count(children);
-
-    const loadMore     = (hasMore && onLoadMore) ? <LoadMore visible={!isLoading} onClick={this.handleLoadMore} /> : null;
-    const loadPending  = (numPending > 0) ? <LoadPending count={numPending} onClick={this.handleLoadPending} /> : null;
+    const loadMore = (hasMore && onLoadMore) ? <LoadMore visible={!isLoading} onClick={(e) => {
+      this.handleLoadMore(e);
+    }} /> : null;
+    const loadPending = (numPending > 0) ? <LoadPending count={numPending} onClick={this.handleLoadPending} /> : null;
     let scrollableArea = null;
 
     if (showLoading) {
@@ -319,7 +328,7 @@ class ScrollableList extends PureComponent {
       );
     } else if (isLoading || childrenCount > 0 || numPending > 0 || hasMore || !emptyMessage) {
       scrollableArea = (
-        <div className={classNames('scrollable', { fullscreen })} ref={this.setRef} onMouseMove={this.handleMouseMove}>
+        <div className={classNames('scrollable', { fullscreen })} ref={this.setRef} onMouseMove={this.handleMouseMove} key={this.state.reloadKey}>
           <div role='feed' className='item-list'>
             {prepend}
 
@@ -345,7 +354,7 @@ class ScrollableList extends PureComponent {
 
             {loadMore}
 
-            {!hasMore && append}
+            {!hasMore && <> {append} </>}
           </div>
         </div>
       );

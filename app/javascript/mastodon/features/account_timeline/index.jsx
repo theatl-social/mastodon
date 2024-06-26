@@ -13,7 +13,7 @@ import { getAccountHidden } from 'mastodon/selectors';
 import { lookupAccount, fetchAccount, lookupAccountAsync } from '../../actions/accounts';
 import { fetchFeaturedTags } from '../../actions/featured_tags';
 import { expandAccountFeaturedTimeline, expandAccountTimeline, connectTimeline, disconnectTimeline } from '../../actions/timelines';
-import { fetchExternalPosts } from '../../actions/external_posts'; // New action import
+//import { fetchExternalPosts } from '../../actions/external_posts'; // New action import
 import ColumnBackButton from '../../components/column_back_button';
 import { LoadingIndicator } from '../../components/loading_indicator';
 import StatusList from '../../components/status_list';
@@ -61,10 +61,10 @@ const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = fa
 
 
 
-
+// if the user is on a remote profile and additional posts are available, this component will be displayed
 const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
   const [isDisabled, setIsDisabled] = useState(false);
-  const [buttonText, setButtonText] = useState('Load more posts');
+  const [buttonText, setButtonText] = useState('Request more posts');
 
   const handleClick = () => {
     setIsDisabled(true);
@@ -75,14 +75,9 @@ const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
 
     handleLoadMore(maxId);
 
-    const interval = setInterval(() => {
-      handleLoadMore(maxId);
-    }, 2500);
-
     setTimeout(() => {
-      clearInterval(interval);
       setIsDisabled(false);
-      setButtonText('Load more posts');
+      setButtonText('Request more posts');
     }, 10000);
   };
 
@@ -101,6 +96,7 @@ const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
 RemoteHint.propTypes = {
   statusIds: PropTypes.arrayOf(PropTypes.number).isRequired,
   handleLoadMore: PropTypes.func.isRequired,
+  reloadHandler: PropTypes.func.isRequired,
 };
 
 RemoteHint.propTypes = {
@@ -235,16 +231,16 @@ class AccountTimeline extends ImmutablePureComponent {
     } else if (blockedBy) {
       emptyMessage = <FormattedMessage id='empty_column.account_unavailable' defaultMessage='Profile unavailable' />;
     } else if (remote && statusIds.isEmpty()) {
-    
-      
-      emptyMessage = <RemoteHint handleLoadMore={this.handleLoadMore} statusIds={this.props.statusIds} reloadHandler={this.reloadTimeline} />;
-
-
+      <></>
+      // this is displayed if the account is remote and we have no posts from them yet
+      //emptyMessage = <RemoteHint handleLoadMore={this.handleLoadMore} statusIds={this.props.statusIds} reloadHandler={this.reloadTimeline} />;
     } else {
       emptyMessage = <FormattedMessage id='empty_column.account_timeline' defaultMessage='No posts found' />;
     }
 
-    const remoteMessage = remote && hasMore ? null : <RemoteHint handleLoadMore={this.handleLoadMore} statusIds={this.props.statusIds} reloadHandler={this.reloadTimeline} />;;
+    const remoteMessage = <RemoteHint handleLoadMore={this.handleLoadMore} statusIds={this.props.statusIds} reloadHandler={this.reloadTimeline} />;;
+    
+    
     return (
       <Column>
         <ColumnBackButton multiColumn={multiColumn} />

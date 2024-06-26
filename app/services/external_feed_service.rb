@@ -5,7 +5,7 @@ require 'json'
 class ExternalFeedService
   MAX_RETRIES = 5
   BASE_INTERVAL = 1
-  MAX_POSTS_TO_COLLECT = 25
+  MAX_POSTS_TO_COLLECT = 15
 
   def initialize(account_id, additional_posts_to_collect)
     @account = Account.find(account_id)
@@ -19,12 +19,20 @@ class ExternalFeedService
   def fetch_and_store_posts
     retries = 0
 
+
+    max_id = fetch_max_uri_from_database(@account.id)
+
     puts 'ACCOUNT: ' << @account.id.to_s
     puts 'ACCOUNT URI: ' << @account.uri
 
     begin
-      puts "COLLECTING OUTBOX #{@account_uri}/outbox"
-      response = fetch_response("#{@account_uri}/outbox")
+
+      outbox_url = "#{@account_uri}/outbox"
+      outbox_url += "?max_id=#{max_id}" if max_id
+      puts "COLLECTING OUTBOX #{outbox_url}"
+  
+      response = fetch_response(outbox_url)
+
       puts "RESPONSE STATUS: #{response.code}"
       puts "RESPONSE BODY: #{response.body}"
 
@@ -61,8 +69,11 @@ class ExternalFeedService
 
   def fetch_response(url)
     uri = URI.parse(url)
+    params = URI.decode_www_form(uri.query || '') << ['type', 'Create']
+    uri.query = URI.encode_www_form(params)
+  
     request = Net::HTTP::Get.new(uri)
-    puts "Fetching URL: #{url}"
+    puts "Fetching URL: #{uri}"
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       response = http.request(request)
       puts "Fetched Response: #{response.code}"
@@ -120,6 +131,26 @@ class ExternalFeedService
         Rails.logger.error "Error fetching posts from page #{page_url}: #{e.message}. Exceeded retry limits."
       end
     end
+  end
+
+
+  def fetch_max_uri_from_database(account_id)
+    # Fetch all URIs for the given account_id from the database
+    uris = Status.where(account_id: account_id).pluck(:uri)
+    puts "Fetched URIs from database for Account ID #{account_id}: #{uris}"
+  
+    # Return nil if there are no URIs
+    return nil if uris.empty?
+  
+    # Extract the last item in the path of each URI and convert to integers
+    last_items = uris.map { |uri| uri.split('/').last.to_i }
+    puts "Extracted last items: #{last_items}"
+  
+    # Find the maximum value
+    max_id = last_items.min
+    puts "Max (min) ID from database URIs: #{max_id}"
+  
+    max_id
   end
 
   def send_collected_posts_to_remote_service
