@@ -11,7 +11,7 @@ class ExternalFeedService
     @account = Account.find(account_id)
     @account_uri = @account.uri
     @additional_posts_to_collect = additional_posts_to_collect
-    @collected_post_ids = []
+    @collected_posts = []
     @cached_post_ids = cached_post_ids_for_account
     puts "Initialized ExternalFeedService for Account ID: #{@account.id}, URI: #{@account.uri}, Additional Posts to Collect: #{@additional_posts_to_collect}"
   end
@@ -32,9 +32,6 @@ class ExternalFeedService
       puts "COLLECTING OUTBOX #{outbox_url}"
   
       response = fetch_response(outbox_url)
-
-      puts "RESPONSE STATUS: #{response.code}"
-      puts "RESPONSE BODY: #{response.body}"
 
       if response.is_a?(Net::HTTPSuccess)
         puts 'RESPONSE SUCCESS IS GOOD'
@@ -98,10 +95,9 @@ class ExternalFeedService
 
         filtered_posts.each do |post|
 
-          puts "EVALUATING POST #{post['id']}"
-          @collected_post_ids << post['id']
-          puts "COLLECTED POST IDS: #{@collected_post_ids}"
-          if @collected_post_ids.size >= @additional_posts_to_collect
+          @collected_posts << post
+
+          if @collected_posts.size >= @additional_posts_to_collect
             send_collected_posts_to_remote_service
             return
           end
@@ -155,9 +151,9 @@ class ExternalFeedService
 
   def send_collected_posts_to_remote_service
     puts "SENDING COLLECTED POSTS TO REMOTE SERVICE"
-    @collected_post_ids.each do |post_id|
-      puts "SENDING POST ID: #{post_id} TO REMOTE SERVICE"
-      ActivityPub::FetchRemoteStatusService.new.call(post_id, prefetched_body: post)
+    @collected_posts.each do |post|
+      puts "SENDING POST ID: #{post['id']} TO REMOTE SERVICE"
+      ActivityPub::FetchRemoteStatusService.new.call(post['id'])
     end
   end
 end
