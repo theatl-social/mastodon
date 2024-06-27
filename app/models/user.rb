@@ -41,6 +41,7 @@
 #  role_id                   :bigint(8)
 #  settings                  :text
 #  time_zone                 :string
+#  membership_level          :integer
 #
 
 class User < ApplicationRecord
@@ -129,6 +130,7 @@ class User < ApplicationRecord
   before_validation :sanitize_time_zone
   before_validation :sanitize_locale
   before_create :set_approved
+  before_create :set_default_membership_level
   after_commit :send_pending_devise_notifications
   after_create_commit :trigger_webhooks
 
@@ -478,6 +480,10 @@ class User < ApplicationRecord
 
   def sanitize_locale
     self.locale = nil if locale.present? && I18n.available_locales.exclude?(locale.to_sym)
+  end
+
+  def set_default_membership_level
+    self.membership_level ||= 0
   end
 
   def prepare_new_user!

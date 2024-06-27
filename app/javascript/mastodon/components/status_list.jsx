@@ -8,6 +8,8 @@ import { LoadGap } from './load_gap';
 import ScrollableList from './scrollable_list';
 import * as Immutable from 'immutable';
 
+
+
 export default class StatusList extends ImmutablePureComponent {
 
   static propTypes = {
@@ -171,6 +173,9 @@ export default class StatusList extends ImmutablePureComponent {
   render() {
     const { statusIds, featuredStatusIds, onLoadMore, timelineId, ...other } = this.props;
     const { isLoading, isPartial } = other;
+
+    console.log("StatusList props:", this.props);
+    console.log("status state:", this.props.statusIds);
 
     if (isPartial) {
       return <RegenerationIndicator />;

@@ -9,6 +9,8 @@ class Api::V1::StatusesController < Api::BaseController
   before_action :set_status, only:       [:show, :context]
   before_action :set_thread, only:       [:create]
 
+
+  
   override_rate_limit_headers :create, family: :statuses
   override_rate_limit_headers :update, family: :statuses
 
@@ -54,14 +56,23 @@ class Api::V1::StatusesController < Api::BaseController
   end
 
   def create
+
+    status_text = status_params[:status]
+    visibility = status_params[:visibility]
+
+    if status_text.include?('!local')
+      status_text = status_text.gsub('!local', '').strip
+      visibility = :not_federated
+    end
+
     @status = PostStatusService.new.call(
       current_user.account,
-      text: status_params[:status],
+      text: status_text,
       thread: @thread,
       media_ids: status_params[:media_ids],
       sensitive: status_params[:sensitive],
       spoiler_text: status_params[:spoiler_text],
-      visibility: status_params[:visibility],
+      visibility: visibility,
       language: status_params[:language],
       scheduled_at: status_params[:scheduled_at],
       application: doorkeeper_token.application,

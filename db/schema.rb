@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_17_213827) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_26_220919) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -1104,6 +1104,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_17_213827) do
     t.bigint "role_id"
     t.text "settings"
     t.string "time_zone"
+    t.integer "membership_level"
     t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["created_by_application_id"], name: "index_users_on_created_by_application_id", where: "(created_by_application_id IS NOT NULL)"

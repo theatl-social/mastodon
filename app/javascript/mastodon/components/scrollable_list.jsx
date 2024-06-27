@@ -75,7 +75,7 @@ class ScrollableList extends PureComponent {
       const clientHeight = this.getClientHeight();
       const offset = scrollHeight - scrollTop - clientHeight;
 
-      if (scrollTop > 0 && offset < 400 && !this.props.isLoading) {
+      if (scrollTop > 0 && offset < 400 && !this.props.isLoading && this.state.hasMore) {
         this.props.onLoadMore();
       }
 

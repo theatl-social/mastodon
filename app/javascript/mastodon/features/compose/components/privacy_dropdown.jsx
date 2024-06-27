@@ -15,6 +15,8 @@ import { IconButton } from '../../../components/icon_button';
 const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
   public_long: { id: 'privacy.public.long', defaultMessage: 'Visible for all' },
+  not_federated_short : { id: 'privacy.not_federated.short', defaultMessage: 'Only for theATL.social' },
+  not_federated_long : { id: 'privacy.not_federated.long', defaultMessage: 'Posts are not published outside theATL.social' },
   unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Unlisted' },
   unlisted_long: { id: 'privacy.unlisted.long', defaultMessage: 'Visible for all, but opted-out of discovery features' },
   private_short: { id: 'privacy.private.short', defaultMessage: 'Followers only' },
@@ -223,6 +225,7 @@ class PrivacyDropdown extends PureComponent {
 
     this.options = [
       { icon: 'globe', value: 'public', text: formatMessage(messages.public_short), meta: formatMessage(messages.public_long) },
+      { icon: 'home', value: 'not_federated', text: formatMessage(messages.not_federated_short), meta: formatMessage(messages.not_federated_long)},
       { icon: 'unlock', value: 'unlisted', text: formatMessage(messages.unlisted_short), meta: formatMessage(messages.unlisted_long) },
       { icon: 'lock', value: 'private', text: formatMessage(messages.private_short), meta: formatMessage(messages.private_long) },
     ];

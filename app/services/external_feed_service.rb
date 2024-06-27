@@ -157,7 +157,7 @@ class ExternalFeedService
     puts "SENDING COLLECTED POSTS TO REMOTE SERVICE"
     @collected_post_ids.each do |post_id|
       puts "SENDING POST ID: #{post_id} TO REMOTE SERVICE"
-      ActivityPub::FetchRemoteStatusService.new.call(post_id)
+      ActivityPub::FetchRemoteStatusService.new.call(post_id, prefetched_body: post)
     end
   end
 end

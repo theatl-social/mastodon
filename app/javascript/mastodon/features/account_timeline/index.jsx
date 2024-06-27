@@ -84,6 +84,7 @@ const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '10px', margin: '10px' }}>
       <button
+        className='button'
         onClick={handleClick}
         disabled={isDisabled}
       >

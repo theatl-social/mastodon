@@ -385,11 +385,16 @@ class Header extends ImmutablePureComponent {
       badges.push(<Badge key={`role-badge-${role.get('id')}`} label={<span>{role.get('name')}</span>} domain={domain} />);
     });
 
+    
     /**
      * Add the financial contributor badge
      */
 
-    console.log(account);
+
+    // TODO for tomorrow.
+    
+
+    // console.log(account);
 
     if (account.get('membership_level')){
       badges.push(<AccountBadges key='account-badge' account={account} />)

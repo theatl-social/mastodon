@@ -7,6 +7,8 @@ class ActivityPub::DistributionWorker < ActivityPub::RawDistributionWorker
     @status  = Status.find(status_id)
     @account = @status.account
 
+    return if status.not_federated_visibility?  # Prevent federation for not_federated visibility
+
     distribute!
   rescue ActiveRecord::RecordNotFound
     true

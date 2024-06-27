@@ -72,10 +72,9 @@ class Rack::Attack
       user_id = req.authenticated_user_id
       user = User.find_by(id: user_id)
       if user
-        account = Account.find_by(id: user.account_id)
-        if account && (account.membership_level.nil? || account.membership_level.zero?)
+        if user && (user.membership_level.nil? || user.membership_level.zero?)
           "throttle_authenticated_api/membership_level_0"
-        elsif account && (account.membership_level >= 10)
+        elsif user && (user.membership_level >= 10)
           "throttle_authenticated_api/membership_level_1_or_higher"
         else
           "throttle_authenticated_api/unauthenticated"

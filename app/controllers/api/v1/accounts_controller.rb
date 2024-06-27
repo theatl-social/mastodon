@@ -80,10 +80,16 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def set_membership_level
-    account = Account.find(params[:id])
-    account.update!(membership_level: params[:membership_level])
-
-    render json: { message: 'Membership level updated successfully' }, status: 200
+    if current_user.role == 'superbot'
+      account = Account.find(params[:account_id])
+      # get user id
+      user_id = account.user_id
+      user = User.find_by(id: user_id)
+      user.update!(membership_level: params[:membership_level])
+      render json: { message: 'Membership level updated successfully' }, status: 200
+    else
+      render json: { error: 'Unauthorized' }, status: 401
+    end
   end
 
   private

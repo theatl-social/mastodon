@@ -14,6 +14,8 @@ import { Icon } from 'mastodon/components/icon';
 import { WordmarkLogo, SymbolLogo } from 'mastodon/components/logo';
 import { registrationsOpen, me, sso_redirect } from 'mastodon/initial_state';
 
+import headerLogo from '../../../../images/smaller-2-logo.png';
+
 const Account = connect(state => ({
   account: state.getIn(['accounts', me]),
 }))(({ account }) => (
@@ -107,8 +109,8 @@ class Header extends PureComponent {
     return (
       <div className='ui__header'>
         <Link to='/' className='ui__header__logo'>
-          <WordmarkLogo />
-          <SymbolLogo />
+          <img src={headerLogo} alt='theATLSocial Logo' height='55px' width='100%'/>
+   
         </Link>
 
         <div className='ui__header__links'>

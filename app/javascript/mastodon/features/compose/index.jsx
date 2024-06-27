@@ -127,7 +127,7 @@ class Compose extends PureComponent {
               <ComposeFormContainer autoFocus={!isMobile(window.innerWidth)} />
 
               <div className='drawer__inner__mastodon'>
-                <img alt='' draggable='false' src={mascot || elephantUIPlane} />
+                <img alt='' draggable='false' src={mascot || elephantUIPlane}  style={{height:'90%',width:'90%'}}/>
               </div>
             </div>
 

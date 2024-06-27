@@ -11,7 +11,7 @@ module BrandingHelper
   end
 
   def _logo_as_symbol_wordmark
-    content_tag(:svg, tag.use(href: '#logo-symbol-wordmark'), viewBox: '0 0 261 66', class: 'logo logo--wordmark')
+    image_pack_tag('medium-2.png', alt: 'theATL.social Logo',  style: 'height: 150px !important;width:100% !important;')
   end
 
   def _logo_as_symbol_icon
@@ -19,7 +19,7 @@ module BrandingHelper
   end
 
   def render_logo
-    image_pack_tag('logo.svg', alt: 'Mastodon', class: 'logo logo--icon')
+    image_pack_tag('logo.svg', alt: 'Mastodon', class: 'logo logo--icon logo--signup')
   end
 
   def render_symbol(version = :icon)

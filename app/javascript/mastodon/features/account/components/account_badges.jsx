@@ -3,6 +3,8 @@ import React from 'react';
 
 const AccountBadges = ({ account }) => {
 
+    // get the user id from the account object
+    const userId = account.get('id');
 
     return (
         <div className='account-member'>
