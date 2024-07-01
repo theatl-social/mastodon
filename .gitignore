@@ -1992,3 +1992,5 @@ postgresql-dev/pg_xact/0000
 redis-dev/dump.rdb
 
 .env.SECRETS
+
+Dockerfile-beta
