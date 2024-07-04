@@ -13,7 +13,7 @@ module Mastodon
     end
 
     def patch
-      '8-theatlsocial-20240528.1'
+      '9-theatlsocial-20240704.1'
 
     end
 
