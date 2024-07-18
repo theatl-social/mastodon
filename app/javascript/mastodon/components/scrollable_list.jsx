@@ -61,7 +61,6 @@ class ScrollableList extends PureComponent {
   };
 
   state = {
-    reloadKey: 0,
     fullscreen: null,
     cachedMediaWidth: 250, // Default media/card width using default Mastodon theme
   };
@@ -75,7 +74,7 @@ class ScrollableList extends PureComponent {
       const clientHeight = this.getClientHeight();
       const offset = scrollHeight - scrollTop - clientHeight;
 
-      if (scrollTop > 0 && offset < 400 && !this.props.isLoading && this.state.hasMore) {
+      if (scrollTop > 0 && offset < 400 && !this.props.isLoading && this.state.hasMore && !this.props.isLoading) {
         this.props.onLoadMore();
       }
 
@@ -298,11 +297,7 @@ class ScrollableList extends PureComponent {
     this.mouseMovedRecently = true;
   };
 
-  refreshComponent = () => {
-    this.setState(prevState => ({
-      reloadKey: prevState.reloadKey + 1,
-    }));
-  };
+
 
   render() {
     const { children, scrollKey, trackScroll, showLoading, isLoading, hasMore, numPending, prepend, alwaysPrepend, append, emptyMessage, onLoadMore } = this.props;
@@ -328,7 +323,7 @@ class ScrollableList extends PureComponent {
       );
     } else if (isLoading || childrenCount > 0 || numPending > 0 || hasMore || !emptyMessage) {
       scrollableArea = (
-        <div className={classNames('scrollable', { fullscreen })} ref={this.setRef} onMouseMove={this.handleMouseMove} key={this.state.reloadKey}>
+        <div className={classNames('scrollable', { fullscreen })} ref={this.setRef} onMouseMove={this.handleMouseMove} >
           <div role='feed' className='item-list'>
             {prepend}
 
@@ -354,7 +349,7 @@ class ScrollableList extends PureComponent {
 
             {loadMore}
 
-            {!hasMore && <> {append} </>}
+            {!hasMore && append }
           </div>
         </div>
       );

@@ -539,12 +539,12 @@ a.column-link {
 }
 
 .button {
-  background: #ffd100 !important;
-  opacity: 0.85;
+  background: #ffd100;
+  opacity: 0.75;
   color: #000;
 }
 
-.button:hover {
+.button:not(:disabled):hover {
   background: #ffd100;
   opacity: 1;
   color: #000;

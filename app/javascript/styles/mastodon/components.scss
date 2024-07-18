@@ -89,8 +89,8 @@
 
   &:disabled,
   &.disabled {
-    background-color: $ui-primary-color;
-    cursor: default;
+    background-color: darkgray;
+    cursor: not-allowed;
   }
 
   &.copyable {

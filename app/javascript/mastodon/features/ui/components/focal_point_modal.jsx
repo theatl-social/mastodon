@@ -379,7 +379,7 @@ class FocalPointModal extends ImmutablePureComponent {
 
             <Button
               type='submit'
-              disabled={!dirty || detecting || isUploadingThumbnail || length(description) > 1500 || is_changing_upload}
+              disabled={!dirty || detecting || isUploadingThumbnail || length(description) > 1500 }
               text={intl.formatMessage(is_changing_upload ? messages.applying : messages.apply)}
             />
           </form>
