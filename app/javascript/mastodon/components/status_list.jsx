@@ -7,6 +7,7 @@ import { debounce } from 'lodash';
 
 import RegenerationIndicator from 'mastodon/components/regeneration_indicator';
 
+import { fetchExternalPosts } from '../actions/external_posts'
 import StatusContainer from '../containers/status_container';
 
 import { LoadGap } from './load_gap';
@@ -59,10 +60,34 @@ export default class StatusList extends ImmutablePureComponent {
     this._selectChild(elementIndex, false);
   };
 
+
+  fetchExternalPosts = async () => {
+    const { accountId, lastId, withReplies, tagged, dispatch } = this.props;
+    try {
+      dispatch(fetchExternalPosts(accountId, { maxId: lastId, withReplies, tagged }));
+    } catch (error) {
+      console.error('Failed to fetch external posts:', error);
+    }
+  };
+
   handleLoadOlder = debounce(() => {
-    const { statusIds, lastId, onLoadMore } = this.props;
-    onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
+    const { statusIds, lastId, onLoadMore, hasMore, remote } = this.props;
+
+    if (!hasMore && remote) {
+      this.fetchExternalPosts();
+    } else {
+      onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
+    }
   }, 300, { leading: true });
+
+  // handleLoadOlder = debounce(() => {
+  //   const { statusIds, lastId, onLoadMore, hasMore } = this.props;
+  //   if (hasMore) {
+  //     onLoadMore(lastId || (statusIds.size > 0 ? statusIds.last() : undefined));
+  //   } else {
+  //     this.fetchExternalPosts();
+  //   }
+  // }, 300, { leading: true });
 
   _selectChild (index, align_top) {
     const container = this.node.node;

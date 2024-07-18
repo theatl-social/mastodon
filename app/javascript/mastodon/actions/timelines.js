@@ -22,6 +22,8 @@ export const TIMELINE_CONNECT      = 'TIMELINE_CONNECT';
 
 export const TIMELINE_MARK_AS_PARTIAL = 'TIMELINE_MARK_AS_PARTIAL';
 
+export const FETCH_EXTERNAL_POSTS_SUCCESS = 'FETCH_EXTERNAL_POSTS_SUCCESS';
+
 export const loadPending = timeline => ({
   type: TIMELINE_LOAD_PENDING,
   timeline,

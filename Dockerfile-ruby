@@ -31,9 +31,26 @@ RUN apt-get update && \
         ca-certificates \
         libreadline8 \
         python3 \
-        shared-mime-info -y
+        shared-mime-info \
+        wget \
+        procps \
+        libssl3 \
+        libpq5 \
+        imagemagick \
+        ffmpeg \
+        libjemalloc2 \
+        libicu72 \
+        libidn12 \
+        libyaml-0-2 \
+        file \
+        ca-certificates \
+        tzdata \
+        libreadline8 \
+        tini 
 
-COPY Gemfile* package.json yarn.lock ./
+COPY ./ /opt/mastodon/
+
+WORKDIR /opt/mastodon
 
 RUN bundle install --with development
 
@@ -41,4 +58,3 @@ RUN yarn install --pure-lockfile
 
 RUN gem install foreman
 
-RUN npm i --force

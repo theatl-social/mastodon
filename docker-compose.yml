@@ -2,19 +2,16 @@ version: '3'
 services:
   db:
     restart: always
-    image: postgres:16-alpine
+    image: postgres:14-alpine
     shm_size: 256mb
+    networks:
+      - internal_network
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'postgres']
     volumes:
-      - ./postgresql-dev:/var/lib/postgresql/data
+      - ./postgres14:/var/lib/postgresql/data
     environment:
       - 'POSTGRES_HOST_AUTH_METHOD=trust'
-    ports:
-      - '5555:5432'
-    networks:
-      - external_network
-      - internal_network
 
   redis:
     restart: always
@@ -24,7 +21,7 @@ services:
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
     volumes:
-      - ./redis-dev:/data
+      - ./redis:/data
 
   # es:
   #   restart: always
@@ -57,70 +54,39 @@ services:
   #   ports:
   #     - '127.0.0.1:9200:9200'
 
-  # web:
-  #   build: .
-  #   image: ghcr.io/mastodon/mastodon:v4.2.9
-  #   restart: always
-  #   env_file: .env.production
-  #   command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
-  #   networks:
-  #     - external_network
-  #     - internal_network
-  #   healthcheck:
-  #     # prettier-ignore
-  #     test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
-  #   ports:
-  #     - '127.0.0.1:3000:3000'
-  #   depends_on:
-  #     - db
-  #     - redis
-  #     # - es
-  #   volumes:
-  #     - ./public/system:/mastodon/public/system
-
   web:
-    build: .
 <<<<<<< HEAD
+    build: .
 <<<<<<< HEAD
     image: ghcr.io/mastodon/mastodon:v4.2.10
 =======
     image: ghcr.io/mastodon/mastodon:v4.2.5
 >>>>>>> 60a145d6d (updating patch version)
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.8
->>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
     restart: always
-    env_file: .env.development
-    #command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
-    command: tail -f /dev/null
+    env_file: .env.production
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
     networks:
       - external_network
       - internal_network
-    # healthcheck:
-    #   # prettier-ignore
-    #   test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
+    healthcheck:
+      # prettier-ignore
+      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
     ports:
-      - '8888:3000'
-      - '3035:3035'
-
+      - '127.0.0.1:3000:3000'
     depends_on:
       - db
       - redis
       # - es
     volumes:
-      - ./:/opt/mastodon
+      - ./public/system:/mastodon/public/system
 
   streaming:
     build: .
-<<<<<<< HEAD
 <<<<<<< HEAD
     image: ghcr.io/mastodon/mastodon:v4.2.10
 =======
     image: ghcr.io/mastodon/mastodon:v4.2.5
 >>>>>>> 60a145d6d (updating patch version)
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.8
->>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
     restart: always
     env_file: .env.production
     command: node ./streaming
@@ -139,14 +105,10 @@ services:
   sidekiq:
     build: .
 <<<<<<< HEAD
-<<<<<<< HEAD
     image: ghcr.io/mastodon/mastodon:v4.2.10
 =======
     image: ghcr.io/mastodon/mastodon:v4.2.5
 >>>>>>> 60a145d6d (updating patch version)
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.8
->>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
     restart: always
     env_file: .env.production
     command: bundle exec sidekiq

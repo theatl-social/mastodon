@@ -1990,3 +1990,5 @@ postgresql-dev/pg_wal/000000010000000000000011
 postgresql-dev/pg_wal/000000010000000000000012
 postgresql-dev/pg_xact/0000
 redis-dev/dump.rdb
+
+.env.SECRETS

@@ -5,7 +5,7 @@ require 'json'
 class ExternalFeedService
   MAX_RETRIES = 5
   BASE_INTERVAL = 1
-  MAX_POSTS = 100
+  MAX_POSTS = 25
 
   def initialize(account, account_uri)
     @account = account

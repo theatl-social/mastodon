@@ -17,6 +17,7 @@ import {
   TIMELINE_DISCONNECT,
   TIMELINE_LOAD_PENDING,
   TIMELINE_MARK_AS_PARTIAL,
+  FETCH_EXTERNAL_POSTS_SUCCESS
 } from '../actions/timelines';
 import { compareId } from '../compare_id';
 
@@ -108,9 +109,9 @@ const updateTimeline = (state, timeline, status, usePendingItems) => {
     return state.update(timeline, initialTimeline, map => map.update('pendingItems', list => list.unshift(status.get('id'))).update('unread', unread => unread + 1));
   }
 
-  const ids        = state.getIn([timeline, 'items'], ImmutableList());
+  const ids = state.getIn([timeline, 'items'], ImmutableList());
   const includesId = ids.includes(status.get('id'));
-  const unread     = state.getIn([timeline, 'unread'], 0);
+  const unread = state.getIn([timeline, 'unread'], 0);
 
   if (includesId) {
     return state;
@@ -154,7 +155,7 @@ const filterTimelines = (state, relationship, statuses) => {
     }
 
     references = statuses.filter(item => item.get('reblog') === status.get('id')).map(item => item.get('id'));
-    state      = deleteStatus(state, status.get('id'), references, relationship.id);
+    state = deleteStatus(state, status.get('id'), references, relationship.id);
   });
 
   return state;
@@ -184,44 +185,55 @@ const reconnectTimeline = (state, usePendingItems) => {
 };
 
 export default function timelines(state = initialState, action) {
-  switch(action.type) {
-  case TIMELINE_LOAD_PENDING:
-    return state.update(action.timeline, initialTimeline, map =>
-      map.update('items', list => map.get('pendingItems').concat(list.take(40))).set('pendingItems', ImmutableList()).set('unread', 0));
-  case TIMELINE_EXPAND_REQUEST:
-    return state.update(action.timeline, initialTimeline, map => map.set('isLoading', true));
-  case TIMELINE_EXPAND_FAIL:
-    return state.update(action.timeline, initialTimeline, map => map.set('isLoading', false));
-  case TIMELINE_EXPAND_SUCCESS:
-    return expandNormalizedTimeline(state, action.timeline, fromJS(action.statuses), action.next, action.partial, action.isLoadingRecent, action.usePendingItems);
-  case TIMELINE_UPDATE:
-    return updateTimeline(state, action.timeline, fromJS(action.status), action.usePendingItems);
-  case TIMELINE_DELETE:
-    return deleteStatus(state, action.id, action.references, action.reblogOf);
-  case TIMELINE_CLEAR:
-    return clearTimeline(state, action.timeline);
-  case ACCOUNT_BLOCK_SUCCESS:
-  case ACCOUNT_MUTE_SUCCESS:
-    return filterTimelines(state, action.relationship, action.statuses);
-  case ACCOUNT_UNFOLLOW_SUCCESS:
-    return filterTimeline('home', state, action.relationship, action.statuses);
-  case TIMELINE_SCROLL_TOP:
-    return updateTop(state, action.timeline, action.top);
-  case TIMELINE_CONNECT:
-    return state.update(action.timeline, initialTimeline, map => reconnectTimeline(map, action.usePendingItems));
-  case TIMELINE_DISCONNECT:
-    return state.update(
-      action.timeline,
-      initialTimeline,
-      map => map.set('online', false).update(action.usePendingItems ? 'pendingItems' : 'items', items => items.first() ? items.unshift(null) : items),
-    );
-  case TIMELINE_MARK_AS_PARTIAL:
-    return state.update(
-      action.timeline,
-      initialTimeline,
-      map => map.set('isPartial', true).set('items', ImmutableList()).set('pendingItems', ImmutableList()).set('unread', 0),
-    );
-  default:
-    return state;
+  switch (action.type) {
+    case TIMELINE_LOAD_PENDING:
+      return state.update(action.timeline, initialTimeline, map =>
+        map.update('items', list => map.get('pendingItems').concat(list.take(40))).set('pendingItems', ImmutableList()).set('unread', 0));
+    case TIMELINE_EXPAND_REQUEST:
+      return state.update(action.timeline, initialTimeline, map => map.set('isLoading', true));
+    case TIMELINE_EXPAND_FAIL:
+      return state.update(action.timeline, initialTimeline, map => map.set('isLoading', false));
+    case TIMELINE_EXPAND_SUCCESS:
+      return expandNormalizedTimeline(state, action.timeline, fromJS(action.statuses), action.next, action.partial, action.isLoadingRecent, action.usePendingItems);
+    case TIMELINE_UPDATE:
+      return updateTimeline(state, action.timeline, fromJS(action.status), action.usePendingItems);
+    case TIMELINE_DELETE:
+      return deleteStatus(state, action.id, action.references, action.reblogOf);
+    case TIMELINE_CLEAR:
+      return clearTimeline(state, action.timeline);
+    case ACCOUNT_BLOCK_SUCCESS:
+    case ACCOUNT_MUTE_SUCCESS:
+      return filterTimelines(state, action.relationship, action.statuses);
+    case ACCOUNT_UNFOLLOW_SUCCESS:
+      return filterTimeline('home', state, action.relationship, action.statuses);
+    case TIMELINE_SCROLL_TOP:
+      return updateTop(state, action.timeline, action.top);
+    case TIMELINE_CONNECT:
+      return state.update(action.timeline, initialTimeline, map => reconnectTimeline(map, action.usePendingItems));
+    case TIMELINE_DISCONNECT:
+      return state.update(
+        action.timeline,
+        initialTimeline,
+        map => map.set('online', false).update(action.usePendingItems ? 'pendingItems' : 'items', items => items.first() ? items.unshift(null) : items),
+      );
+    case TIMELINE_MARK_AS_PARTIAL:
+      return state.update(
+        action.timeline,
+        initialTimeline,
+        map => map.set('isPartial', true).set('items', ImmutableList()).set('pendingItems', ImmutableList()).set('unread', 0),
+      );
+      case FETCH_EXTERNAL_POSTS_SUCCESS:
+        const { accountId, posts, hasMore } = action.payload;
+        const accountKey = `account:${accountId}`;
+        return {
+          ...state,
+          [accountKey]: {
+            ...state[accountKey],
+            items: state[accountKey].items.concat(posts),
+            hasMore: hasMore,
+          },
+        };
+    default:
+      return state;
   }
 }

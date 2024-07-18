@@ -78,9 +78,9 @@ class FollowService < BaseService
     follow_request
   end
 
-  def fetch_external_posts
-    ExternalFeedFetcherWorker.perform_async(@target_account, @target_account.uri)
-  end
+  # def fetch_external_posts
+  #   ExternalFeedFetcherWorker.perform_async(@target_account, @target_account.uri)
+  # end
 
   def direct_follow!
     follow = @source_account.follow!(@target_account, **follow_options.merge(rate_limit: @options[:with_rate_limit], bypass_limit: @options[:bypass_limit]))

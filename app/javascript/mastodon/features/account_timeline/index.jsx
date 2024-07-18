@@ -1,26 +1,22 @@
 import PropTypes from 'prop-types';
-
 import { FormattedMessage } from 'react-intl';
-
 import { List as ImmutableList } from 'immutable';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import ImmutablePureComponent from 'react-immutable-pure-component';
 import { connect } from 'react-redux';
-
 import { TimelineHint } from 'mastodon/components/timeline_hint';
 import BundleColumnError from 'mastodon/features/ui/components/bundle_column_error';
 import { me } from 'mastodon/initial_state';
 import { normalizeForLookup } from 'mastodon/reducers/accounts_map';
 import { getAccountHidden } from 'mastodon/selectors';
-
 import { lookupAccount, fetchAccount } from '../../actions/accounts';
 import { fetchFeaturedTags } from '../../actions/featured_tags';
 import { expandAccountFeaturedTimeline, expandAccountTimeline, connectTimeline, disconnectTimeline } from '../../actions/timelines';
+import { fetchExternalPosts } from '../../actions/external_posts'; // New action import
 import ColumnBackButton from '../../components/column_back_button';
 import { LoadingIndicator } from '../../components/loading_indicator';
 import StatusList from '../../components/status_list';
 import Column from '../ui/components/column';
-
 import LimitedAccountHint from './components/limited_account_hint';
 import HeaderContainer from './containers/header_container';
 
@@ -146,7 +142,13 @@ class AccountTimeline extends ImmutablePureComponent {
   }
 
   handleLoadMore = maxId => {
-    this.props.dispatch(expandAccountTimeline(this.props.accountId, { maxId, withReplies: this.props.withReplies, tagged: this.props.params.tagged }));
+    const { accountId, withReplies, params: { tagged }, hasMore, remote, dispatch } = this.props;
+
+    if (!hasMore && remote) {
+      dispatch(fetchExternalPosts(accountId, { maxId, withReplies, tagged }));
+    } else {
+      dispatch(expandAccountTimeline(accountId, { maxId, withReplies, tagged }));
+    }
   };
 
   render () {
@@ -180,7 +182,7 @@ class AccountTimeline extends ImmutablePureComponent {
       emptyMessage = <FormattedMessage id='empty_column.account_timeline' defaultMessage='No posts found' />;
     }
 
-    const remoteMessage = remote ? <RemoteHint url={remoteUrl} /> : null;
+    const remoteMessage = remote && hasMore ? null : <RemoteHint url={remoteUrl} />;
 
     return (
       <Column>
