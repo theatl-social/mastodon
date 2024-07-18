@@ -227,6 +227,7 @@ namespace :api, format: false do
           post :unsuspend
           post :approve
           post :reject
+          post :set_membership_level
         end
 
         resource :action, only: [:create], controller: 'account_actions'

@@ -83,6 +83,7 @@ class User < ApplicationRecord
   belongs_to :invite, counter_cache: :uses, optional: true
   belongs_to :created_by_application, class_name: 'Doorkeeper::Application', optional: true
   belongs_to :role, class_name: 'UserRole', optional: true
+
   accepts_nested_attributes_for :account
 
   has_many :applications, class_name: 'Doorkeeper::Application', as: :owner
@@ -121,6 +122,7 @@ class User < ApplicationRecord
   scope :matches_email, ->(value) { where(arel_table[:email].matches("#{value}%")) }
   scope :matches_ip, ->(value) { left_joins(:ips).where('user_ips.ip <<= ?', value).group('users.id') }
   scope :emailable, -> { confirmed.enabled.joins(:account).merge(Account.searchable) }
+  scope :following_external, -> { joins(:follows).where(follows: { target_account: Account.remote }) }
 
   before_validation :sanitize_languages
   before_validation :sanitize_role
@@ -158,6 +160,10 @@ class User < ApplicationRecord
     else
       super
     end
+  end
+
+  def superbot?
+    role&.name == 'superbot'
   end
 
   def confirmed?

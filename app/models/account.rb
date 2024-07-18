@@ -161,6 +161,10 @@ class Account < ApplicationRecord
 
   update_index('accounts', :self)
 
+  def external_account?
+    target_account.remote?
+  end
+
   def local?
     domain.nil?
   end

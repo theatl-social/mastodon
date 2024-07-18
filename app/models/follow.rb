@@ -51,6 +51,10 @@ class Follow < ApplicationRecord
 
   private
 
+  def assert_not_nil(value, message)
+    raise ArgumentError, message if value.nil?
+  end
+
   def set_uri
     self.uri = ActivityPub::TagManager.instance.generate_uri_for(self) if uri.nil?
   end

@@ -42,7 +42,7 @@ const messages = defineMessages({
   personal: { id: 'navigation_bar.personal', defaultMessage: 'Personal' },
   security: { id: 'navigation_bar.security', defaultMessage: 'Security' },
   menu: { id: 'getting_started.heading', defaultMessage: 'Getting started' },
-  members_page: {id: 'navigation_bar.members_page', defaultMessage: 'Members Page'}
+  members_page: {id: 'navigation_bar.members_page', defaultMessage: 'Members Tools'}
 });
 
 const mapStateToProps = state => ({

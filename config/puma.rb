@@ -27,3 +27,9 @@ end
 plugin :tmp_restart
 
 set_remote_address(proxy_protocol: :v1) if ENV['PROXY_PROTO_V1'] == 'true'
+
+# Redirect stdout and stderr to default output
+stdout_redirect nil, nil, true
+
+# Log requests to STDOUT
+log_requests true
