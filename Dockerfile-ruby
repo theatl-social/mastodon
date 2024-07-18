@@ -1,0 +1,44 @@
+# syntax=docker/dockerfile:1.4
+# This needs to be bookworm-slim because the Ruby image is built on bookworm-slim
+ARG NODE_VERSION="20.6-bookworm-slim"
+
+FROM --platform=x86_64 ghcr.io/moritzheiber/ruby-jemalloc:3.2.3-slim as ruby
+FROM --platform=amd64 node:${NODE_VERSION} as build
+
+COPY --link --from=ruby /opt/ruby /opt/ruby
+
+ENV DEBIAN_FRONTEND="noninteractive" \
+    PATH="${PATH}:/opt/ruby/bin"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# WORKDIR /opt/mastodon
+
+# hadolint ignore=DL3008
+RUN apt-get update && \
+    apt-get -yq dist-upgrade && \
+    apt-get install -y --no-install-recommends build-essential \
+        git \
+        libicu-dev \
+        libidn-dev \
+        libpq-dev \
+        libjemalloc-dev \
+        zlib1g-dev \
+        libgdbm-dev \
+        libgmp-dev \
+        libssl-dev \
+        libyaml-0-2 \
+        ca-certificates \
+        libreadline8 \
+        python3 \
+        shared-mime-info -y
+
+COPY Gemfile* package.json yarn.lock ./
+
+RUN bundle install --with development
+
+RUN yarn install --pure-lockfile
+
+RUN gem install foreman
+
+RUN npm i --force

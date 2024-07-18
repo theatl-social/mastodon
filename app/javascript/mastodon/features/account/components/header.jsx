@@ -23,6 +23,8 @@ import { PERMISSION_MANAGE_USERS, PERMISSION_MANAGE_FEDERATION } from 'mastodon/
 import AccountNoteContainer from '../containers/account_note_container';
 import FollowRequestNoteContainer from '../containers/follow_request_note_container';
 
+import AccountBadges from './account_badges';
+
 const messages = defineMessages({
   unfollow: { id: 'account.unfollow', defaultMessage: 'Unfollow' },
   follow: { id: 'account.follow', defaultMessage: 'Follow' },
@@ -383,6 +385,16 @@ class Header extends ImmutablePureComponent {
       badges.push(<Badge key={`role-badge-${role.get('id')}`} label={<span>{role.get('name')}</span>} domain={domain} />);
     });
 
+    /**
+     * Add the financial contributor badge
+     */
+
+    console.log(account);
+
+    if (account.get('membership_level')){
+      badges.push(<AccountBadges key='account-badge' account={account} />)
+    }
+
     return (
       <div className={classNames('account__header', { inactive: !!account.get('moved') })} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
         {!(suspended || hidden || account.get('moved')) && account.getIn(['relationship', 'requested_by']) && <FollowRequestNoteContainer account={account} />}
@@ -430,6 +442,8 @@ class Header extends ImmutablePureComponent {
             </div>
           )}
 
+          
+
           {!(suspended || hidden) && (
             <div className='account__header__extra'>
               <div className='account__header__bio' ref={this.setRef}>
@@ -442,6 +456,7 @@ class Header extends ImmutablePureComponent {
                     <dt><FormattedMessage id='account.joined_short' defaultMessage='Joined' /></dt>
                     <dd>{intl.formatDate(account.get('created_at'), { year: 'numeric', month: 'short', day: '2-digit' })}</dd>
                   </dl>
+
 
                   {fields.map((pair, i) => (
                     <dl key={i} className={classNames({ verified: pair.get('verified_at') })}>

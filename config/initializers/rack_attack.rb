@@ -66,25 +66,74 @@ class Rack::Attack
     IpBlock.blocked?(req.remote_ip)
   end
 
-  throttle('throttle_authenticated_api', limit: 1_500, period: 5.minutes) do |req|
-    req.authenticated_user_id if req.api_request?
+  # Helper method to fetch the throttle key based on membership level
+  def self.throttle_by_membership(req)
+    if req.authenticated_user_id.present?
+      user_id = req.authenticated_user_id
+      user = User.find_by(id: user_id)
+      if user
+        account = Account.find_by(id: user.account_id)
+        if account && (account.membership_level.nil? || account.membership_level.zero?)
+          "throttle_authenticated_api/membership_level_0"
+        elsif account && (account.membership_level >= 10)
+          "throttle_authenticated_api/membership_level_1_or_higher"
+        else
+          "throttle_authenticated_api/unauthenticated"
+        end
+      end
+    end
+    "throttle_authenticated_api/unauthenticated"
   end
 
+  # Throttle based on membership level
+  throttle('throttle_authenticated_api/membership_level_0', limit: 750, period: 5.minutes) do |req|
+    if req.api_request?
+      key = throttle_by_membership(req)
+      req.authenticated_token_id if key.include?("membership_level_0")
+    end
+  end
+
+  throttle('throttle_authenticated_api/membership_level_1_or_higher', limit: 2_500, period: 5.minutes) do |req|
+    if req.api_request?
+      key = throttle_by_membership(req)
+      req.authenticated_token_id if key.include?("membership_level_1_or_higher")
+    end
+  end
+
+  # Throttle unauthenticated requests separately
   throttle('throttle_per_token_api', limit: 500, period: 5.minutes) do |req|
-    req.authenticated_token_id if req.api_request?
+    if req.api_request?
+      key = throttle_by_membership(req)
+      req.throttleable_remote_ip if key.include?("unauthenticated")
+    end
   end
 
-  throttle('throttle_unauthenticated_api', limit: 500, period: 5.minutes) do |req|
-    req.throttleable_remote_ip if req.api_request? && req.unauthenticated?
-  end
+  # # Throttle unauthenticated requests separately
+  # throttle('throttle_per_token_api', limit: 500, period: 5.minutes) do |req|
+  #   "throttle_unauthenciated_api" if req.api_request? && req.authenticated_user_id.nil?
+  # end
+
+  # throttle('throttle_authenticated_api', limit: 1_500, period: 5.minutes) do |req|
+  #   req.authenticated_user_id if req.api_request?
+  # end
+
+  # throttle('throttle_per_token_api', limit: 500, period: 5.minutes) do |req|
+  #   req.authenticated_token_id if req.api_request?
+  # end
+
+  # throttle('throttle_unauthenticated_api', limit: 500, period: 5.minutes) do |req|
+  #   req.throttleable_remote_ip if req.api_request? && req.unauthenticated?
+  # end
 
   throttle('throttle_api_media', limit: 30, period: 30.minutes) do |req|
     req.authenticated_user_id if req.post? && req.path.match?(%r{\A/api/v\d+/media\z}i)
   end
 
+  ## TODO: throttle based on authentication
   throttle('throttle_media_proxy', limit: 30, period: 10.minutes) do |req|
     req.throttleable_remote_ip if req.path.start_with?('/media_proxy')
   end
+  ## END TODO: throttle based on authenticatoin
 
   throttle('throttle_api_sign_up', limit: 5, period: 30.minutes) do |req|
     req.throttleable_remote_ip if req.post? && req.path == '/api/v1/accounts'

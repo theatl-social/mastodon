@@ -3,88 +3,46 @@ version: '3'
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+
     volumes:
       - ../..:/workspaces:cached
-    environment:
-      RAILS_ENV: development
-      NODE_ENV: development
-      BIND: 0.0.0.0
-      REDIS_HOST: redis
-      REDIS_PORT: '6379'
-      DB_HOST: db
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_PORT: '5432'
-      ES_ENABLED: 'true'
-      ES_HOST: es
-      ES_PORT: '9200'
-      LIBRE_TRANSLATE_ENDPOINT: http://libretranslate:5000
+
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-    ports:
-      - '127.0.0.1:3000:3000'
-      - '127.0.0.1:3035:3035'
-      - '127.0.0.1:4000:4000'
-    networks:
-      - external_network
-      - internal_network
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:db
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
-    image: postgres:14-alpine
+    image: postgres:latest
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./create-db-user.sql:/docker-entrypoint-initdb.d/create-db-user.sql
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_HOST_AUTH_METHOD: trust
-    networks:
-      - internal_network
+      # Your config/database.yml should use the user and password you set here,
+      # and host "db" (as that's the name of this service). You can use whatever
+      # database name you want. Use `bin/rails db:prepare` to create the database.
+      #
+      # Example:
+      #
+      #  development:
+      #    <<: *default
+      #    host: db
+      #    username: postgres
+      #    password: postgres
+      #    database: myapp_development
 
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - redis-data:/data
-    networks:
-      - internal_network
-
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
-    restart: unless-stopped
-    environment:
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-      cluster.name: es-mastodon
-      discovery.type: single-node
-      bootstrap.memory_lock: 'true'
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-    networks:
-      - internal_network
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-
-  libretranslate:
-    image: libretranslate/libretranslate:v1.3.11
-    restart: unless-stopped
-    volumes:
-      - lt-data:/home/libretranslate/.local
-    networks:
-      - external_network
-      - internal_network
+    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
 
 volumes:
   postgres-data:
-  redis-data:
-  es-data:
-  lt-data:
-
-networks:
-  external_network:
-  internal_network:
-    internal: true

@@ -1,40 +1,27 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ruby-rails-postgres
 {
-  "name": "Mastodon on local machine",
+  "name": "Ruby on Rails & Postgres",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-
-  "features": {
-    "ghcr.io/devcontainers/features/sshd:1": {}
-  },
-
-  "forwardPorts": [3000, 4000],
-
-  "portsAttributes": {
-    "3000": {
-      "label": "web",
-      "onAutoForward": "notify",
-      "requireLocalPort": true
-    },
-    "4000": {
-      "label": "stream",
-      "onAutoForward": "silent",
-      "requireLocalPort": true
-    }
-  },
-
-  "otherPortsAttributes": {
-    "onAutoForward": "silent"
-  },
-
-  "onCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
-  "postCreateCommand": ".devcontainer/post-create.sh",
-  "waitFor": "postCreateCommand",
-
-  "customizations": {
-    "vscode": {
-      "settings": {},
-      "extensions": ["EditorConfig.EditorConfig", "webben.browserslist"]
-    }
+  "containerEnv": {
+    "RAILS_ENV": "development"
   }
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // This can be used to network with other containers or the host.
+  // "forwardPorts": [3000, 5432],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "bundle install && rake db:setup",
+
+  // Configure tool-specific properties.
+  // "customizations": {},
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
 }

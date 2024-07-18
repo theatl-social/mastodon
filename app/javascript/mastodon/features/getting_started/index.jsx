@@ -42,6 +42,7 @@ const messages = defineMessages({
   personal: { id: 'navigation_bar.personal', defaultMessage: 'Personal' },
   security: { id: 'navigation_bar.security', defaultMessage: 'Security' },
   menu: { id: 'getting_started.heading', defaultMessage: 'Getting started' },
+  members_page: {id: 'navigation_bar.members_page', defaultMessage: 'Members Page'}
 });
 
 const mapStateToProps = state => ({
@@ -128,6 +129,7 @@ class GettingStarted extends ImmutablePureComponent {
       navItems.push(
         <ColumnSubheading key='header-settings' text={intl.formatMessage(messages.settings_subheading)} />,
         <ColumnLink key='preferences' icon='gears' text={intl.formatMessage(messages.preferences)} href='/settings/preferences' />,
+        <ColumnLink key='memberspage' href='https://members.theatl.social' icon='house-user' text={intl.formatMessage(messages.members_page)} />
       );
     }
 

@@ -80,15 +80,7 @@ services:
 
   web:
     build: .
-<<<<<<< HEAD
-<<<<<<< HEAD
-    image: ghcr.io/mastodon/mastodon:v4.2.10
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.5
->>>>>>> 60a145d6d (updating patch version)
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.8
->>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
+    image: rubydev-20240617
     restart: always
     env_file: .env.development
     #command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
@@ -110,56 +102,40 @@ services:
     volumes:
       - ./:/opt/mastodon
 
-  streaming:
-    build: .
-<<<<<<< HEAD
-<<<<<<< HEAD
-    image: ghcr.io/mastodon/mastodon:v4.2.10
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.5
->>>>>>> 60a145d6d (updating patch version)
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.8
->>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
-    restart: always
-    env_file: .env.production
-    command: node ./streaming
-    networks:
-      - external_network
-      - internal_network
-    healthcheck:
-      # prettier-ignore
-      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
-    ports:
-      - '127.0.0.1:4000:4000'
-    depends_on:
-      - db
-      - redis
+  # streaming:
+  #   build: .
+  #   image: ghcr.io/mastodon/mastodon:v4.2.9
+  #   restart: always
+  #   env_file: .env.development
+  #   command: node ./streaming
+  #   networks:
+  #     - external_network
+  #     - internal_network
+  #   healthcheck:
+  #     # prettier-ignore
+  #     test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
+  #   ports:
+  #     - '127.0.0.1:4000:4000'
+  #   depends_on:
+  #     - db
+  #     - redis
 
-  sidekiq:
-    build: .
-<<<<<<< HEAD
-<<<<<<< HEAD
-    image: ghcr.io/mastodon/mastodon:v4.2.10
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.5
->>>>>>> 60a145d6d (updating patch version)
-=======
-    image: ghcr.io/mastodon/mastodon:v4.2.8
->>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
-    restart: always
-    env_file: .env.production
-    command: bundle exec sidekiq
-    depends_on:
-      - db
-      - redis
-    networks:
-      - external_network
-      - internal_network
-    volumes:
-      - ./public/system:/mastodon/public/system
-    healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+  # sidekiq:
+  #   build: .
+  #   image: ghcr.io/mastodon/mastodon:v4.2.9
+  #   restart: always
+  #   env_file: .env.development
+  #   command: bundle exec sidekiq
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   networks:
+  #     - external_network
+  #     - internal_network
+  #   volumes:
+  #     - ./public/system:/mastodon/public/system
+  #   healthcheck:
+  #     test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
 
   ## Uncomment to enable federation with tor instances along with adding the following ENV variables
   ## http_proxy=http://privoxy:8118
