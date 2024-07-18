@@ -18,6 +18,9 @@ module Mastodon
 =======
       '3-theatlsocial-20241007'
 >>>>>>> 24a4091f3 (fixed version issue)
+=======
+      '3-theatlsocial-20240114'
+>>>>>>> 3a180d266 (fixed version)
     end
 
     def default_prerelease
