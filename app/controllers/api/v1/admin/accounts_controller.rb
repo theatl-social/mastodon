@@ -9,7 +9,7 @@ class Api::V1::Admin::AccountsController < Api::BaseController
   before_action -> { authorize_if_got_token! :'admin:read', :'admin:read:accounts' }, only: [:index, :show]
   before_action -> { authorize_if_got_token! :'admin:write', :'admin:write:accounts' }, except: [:index, :show]
   before_action :set_accounts, only: :index
-  before_action :set_account, except: :index
+  before_action :set_account, except: [:index, :admin_create]
   before_action :require_local_account!, only: [:enable, :approve, :reject]
 
   after_action :verify_authorized
@@ -33,58 +33,6 @@ class Api::V1::Admin::AccountsController < Api::BaseController
   ).freeze
 
   PAGINATION_PARAMS = (%i(limit) + FILTER_PARAMS).freeze
-
-  def create
-    role_id  = nil
-    username = params[:username]
-    email = params[:email]
-    confirmed = params[:confirmed] || false
-    reattach = params[:reattach] || false
-    force = params[:force] || false
-    approve = params[:approve] || false
-    role_name = params[:role]
-
-    if role_name
-      role = UserRole.find_by(name: role_name)
-      if role.nil?
-        render json: { error: 'Cannot find user role with that name' }, status: :unprocessable_entity
-        return
-      end
-      role_id = role.id
-    end
-
-    account = Account.new(username: username)
-    password = SecureRandom.hex
-    user = User.new(email: email, password: password, agreement: true, role_id: role_id, confirmed_at: confirmed ? Time.now.utc : nil, bypass_invite_request_check: true)
-
-    if reattach
-      account = Account.find_local(username) || Account.new(username: username)
-
-      if account.user.present? && !force
-        render json: { error: 'The chosen username is currently in use. Use force to reattach it anyway and delete the other user' }, status: :unprocessable_entity
-        return
-      elsif account.user.present?
-        DeleteAccountService.new.call(account, reserve_email: false, reserve_username: false)
-        account = Account.new(username: username)
-      end
-    end
-
-    account.suspended_at = nil
-    user.account = account
-
-    if user.save
-      if confirmed
-        user.confirmed_at = nil
-        user.confirm!
-      end
-
-      user.approve! if approve
-
-      render json: { message: 'Account created successfully', password: password }, status: :ok
-    else
-      render json: { error: user.errors.full_messages }, status: :unprocessable_entity
-    end
-  end
 
   def index
     authorize :account, :index?
@@ -145,14 +93,113 @@ class Api::V1::Admin::AccountsController < Api::BaseController
     render json: @account, serializer: REST::Admin::AccountSerializer
   end
 
-  def set_membership_level
+  def update_membership_level
     account = Account.find(params[:id])
+    authorize @account, :update_membership_level?
     membership_level = params[:membership_level]
-
+  
     if account.update(membership_level: membership_level)
       render json: { message: 'Membership level updated successfully' }, status: :ok
     else
       render json: { error: account.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue Pundit::NotAuthorizedError
+    render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
+  end
+
+  
+  def admin_create
+    authorize :account, :admin_create?
+  
+    role_id = nil
+    username = params[:username]
+    email = params[:email]
+    confirmed = params[:confirmed] || false
+    reattach = params[:reattach] || false
+    force = params[:force] || false
+    approve = params[:approve] || false
+    role_name = params[:role]
+    is_bot = params[:is_bot] || false
+  
+    json_data = JSON.parse(request.body.read)
+    bio = json_data['bio']
+    extra_fields = json_data['extra_fields']
+    header_picture = json_data['header_picture']
+    avatar_picture = json_data['avatar_picture']
+  
+    if role_name
+      role = UserRole.find_by(name: role_name)
+      if role.nil?
+        render json: { error: 'Cannot find user role with that name' }, status: :unprocessable_entity
+        return
+      end
+      role_id = role.id
+    end
+  
+  
+    # # Decode base64 images if provided
+    # if avatar_picture
+    #   decoded_avatar = Base64.decode64(avatar_picture.split(',').last)
+    # end
+    # if header_picture
+    #   decoded_header = Base64.decode64(header_picture.split(',').last)
+    # end
+  
+    # Create account with conditional attributes
+    account_attributes = {
+      username: username,
+      actor_type: is_bot ? 'Service' : 'Person'
+    }
+    account_attributes[:display_name] = json_data['display_name'] if json_data['display_name'].present?
+    account_attributes[:note] = bio if bio.present?
+    account_attributes[:fields] = extra_fields if extra_fields.present?
+  
+    account = Account.new(account_attributes)
+  
+    password = SecureRandom.hex
+    user = User.new(
+      email: email, 
+      password: password, 
+      agreement: true, 
+      role_id: role_id, 
+      confirmed_at: confirmed ? Time.now.utc : nil, 
+      bypass_invite_request_check: true
+    )
+  
+    if reattach
+      account = Account.find_local(username) || Account.new(username: username)
+  
+      if account.user.present? && !force
+        render json: { error: 'The chosen username is currently in use. Use force to reattach it anyway and delete the other user' }, status: :unprocessable_entity
+        return
+      elsif account.user.present?
+        DeleteAccountService.new.call(account, reserve_email: false, reserve_username: false)
+        account = Account.new(username: username)
+      end
+    end
+  
+    account.suspended_at = nil
+    user.account = account
+  
+    if user.save
+      # if avatar_picture
+      #   account.avatar.attach(io: StringIO.new(decoded_avatar), filename: "#{username}_avatar.png", content_type: 'image/png')
+      # end
+  
+      # if header_picture
+      #   account.header.attach(io: StringIO.new(decoded_header), filename: "#{username}_header.png", content_type: 'image/png')
+      # end
+  
+      if confirmed
+        user.confirmed_at = nil
+        user.confirm!
+      end
+  
+      user.approve! if approve
+  
+      render json: { message: 'Account created successfully', password: password }, status: :ok
+    else
+      render json: { error: user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

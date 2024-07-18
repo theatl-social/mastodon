@@ -78,7 +78,7 @@ class Api::V1::NotificationsController < Api::BaseController
   end
 
   def browserable_params
-    params.permit(:account_id, types: [], exclude_types: [])
+    params.permit(:account_id, :since_id, types: [], exclude_types: [])
   end
 
   def pagination_params(core_params)

@@ -64,4 +64,14 @@ class AccountPolicy < ApplicationPolicy
   def review?
     role.can?(:manage_taxonomies)
   end
+
+  def update_membership_level?
+    role.can?(:manage_users)
+  end
+
+  def admin_create?
+    role.can?(:manage_users)
+  end
+
+
 end

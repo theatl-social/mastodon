@@ -221,7 +221,11 @@ namespace :api, format: false do
       resource :subscription, only: [:create, :show, :update, :destroy]
     end
 
+
     namespace :admin do
+
+      post 'accounts/create', to: 'accounts#admin_create'
+      
       resources :accounts, only: [:index, :show, :destroy] do
         member do
           post :enable
@@ -230,14 +234,13 @@ namespace :api, format: false do
           post :unsuspend
           post :approve
           post :reject
-          post :membership_level, to: 'accounts#set_membership_level'  # Change this line
+          post :membership_level, to: 'accounts#update_membership_level'  # Change this line
         end
 
         resource :action, only: [:create], controller: 'account_actions'
-
+        
       end
 
-      post 'accounts/create', to: 'accounts#create'  # Define the route for creating accounts
 
       resources :reports, only: [:index, :update, :show] do
         member do
