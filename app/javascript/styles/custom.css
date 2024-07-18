@@ -37,6 +37,13 @@ expressed or implied. Any use is at your own responsibility.
 * GENERAL
 ***********************************/
 
+
+.body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1.15rem;
+  font-family: 500;
+}
+
 .status__content__text {
     font-weight: 500;
 }
@@ -287,13 +294,13 @@ body.embed .button.logo-button {
 
 body.admin {
   font-size: 1rem;
-  font-family: 'Raleway', serif;
+  font-family: 'IBM Plex Sans', serif;
   font-weight: 400;
 }
 
 .admin .display-name__html {
   font-size: 1rem;
-  font-family: 'Raleway', serif;
+  font-family: 'IBM Plex Sans', serif;
   font-weight: 400;
 }
 
@@ -301,7 +308,7 @@ body.admin {
 
 body {
   font-size: 1.15rem;
-  font-family: 'Raleway', serif;
+  font-family: 'IBM Plex Sans', serif;
   font-weight: 500;
 }
 

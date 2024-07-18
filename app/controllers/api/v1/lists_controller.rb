@@ -46,7 +46,7 @@ class Api::V1::ListsController < Api::BaseController
   end
 
   def create_if_not_exists
-    if current_user.role == 'superbot' && params[:user_id].present?
+    if current_user.role == 'Admin' && params[:user_id].present?
       target_user = User.find_by(id: params[:user_id])
       if target_user.nil?
         render json: { error: 'User not found' }, status: 404

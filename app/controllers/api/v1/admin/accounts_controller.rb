@@ -34,6 +34,58 @@ class Api::V1::Admin::AccountsController < Api::BaseController
 
   PAGINATION_PARAMS = (%i(limit) + FILTER_PARAMS).freeze
 
+  def create
+    role_id  = nil
+    username = params[:username]
+    email = params[:email]
+    confirmed = params[:confirmed] || false
+    reattach = params[:reattach] || false
+    force = params[:force] || false
+    approve = params[:approve] || false
+    role_name = params[:role]
+
+    if role_name
+      role = UserRole.find_by(name: role_name)
+      if role.nil?
+        render json: { error: 'Cannot find user role with that name' }, status: :unprocessable_entity
+        return
+      end
+      role_id = role.id
+    end
+
+    account = Account.new(username: username)
+    password = SecureRandom.hex
+    user = User.new(email: email, password: password, agreement: true, role_id: role_id, confirmed_at: confirmed ? Time.now.utc : nil, bypass_invite_request_check: true)
+
+    if reattach
+      account = Account.find_local(username) || Account.new(username: username)
+
+      if account.user.present? && !force
+        render json: { error: 'The chosen username is currently in use. Use force to reattach it anyway and delete the other user' }, status: :unprocessable_entity
+        return
+      elsif account.user.present?
+        DeleteAccountService.new.call(account, reserve_email: false, reserve_username: false)
+        account = Account.new(username: username)
+      end
+    end
+
+    account.suspended_at = nil
+    user.account = account
+
+    if user.save
+      if confirmed
+        user.confirmed_at = nil
+        user.confirm!
+      end
+
+      user.approve! if approve
+
+      render json: { message: 'Account created successfully', password: password }, status: :ok
+    else
+      render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def index
     authorize :account, :index?
     render json: @accounts, each_serializer: REST::Admin::AccountSerializer
@@ -91,6 +143,17 @@ class Api::V1::Admin::AccountsController < Api::BaseController
     Admin::UnsuspensionWorker.perform_async(@account.id)
     log_action :unsuspend, @account
     render json: @account, serializer: REST::Admin::AccountSerializer
+  end
+
+  def set_membership_level
+    account = Account.find(params[:id])
+    membership_level = params[:membership_level]
+
+    if account.update(membership_level: membership_level)
+      render json: { message: 'Membership level updated successfully' }, status: :ok
+    else
+      render json: { error: account.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   private

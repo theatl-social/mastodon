@@ -71,26 +71,6 @@ class Api::V1::AccountsController < Api::BaseController
     render json: @account, serializer: REST::RelationshipSerializer, relationships: relationships
   end
 
-  def lists
-    if current_user.role == 'superbot'
-      render json: @account.lists.select(:id, :title), each_serializer: REST::ListSerializer
-    else
-      render json: { error: 'Unauthorized' }, status: 401
-    end
-  end
-
-  def set_membership_level
-    if current_user.role == 'superbot'
-      account = Account.find(params[:account_id])
-      # get user id
-      user_id = account.user_id
-      user = User.find_by(id: user_id)
-      user.update!(membership_level: params[:membership_level])
-      render json: { message: 'Membership level updated successfully' }, status: 200
-    else
-      render json: { error: 'Unauthorized' }, status: 401
-    end
-  end
 
   private
 

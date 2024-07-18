@@ -184,7 +184,6 @@ namespace :api, format: false do
         post :unblock
         post :mute
         post :unmute
-        get  :lists
       end
 
       resource :pin, only: :create, controller: 'accounts/pins'
@@ -231,11 +230,14 @@ namespace :api, format: false do
           post :unsuspend
           post :approve
           post :reject
-          post :set_membership_level
+          post :membership_level, to: 'accounts#set_membership_level'  # Change this line
         end
 
         resource :action, only: [:create], controller: 'account_actions'
+
       end
+
+      post 'accounts/create', to: 'accounts#create'  # Define the route for creating accounts
 
       resources :reports, only: [:index, :update, :show] do
         member do

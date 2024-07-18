@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+MAX_DEPTH_CHECK_NOT_FEDERATED = 25
+
 class Api::V1::StatusesController < Api::BaseController
   include Authorization
 
@@ -56,14 +58,29 @@ class Api::V1::StatusesController < Api::BaseController
   end
 
   def create
-
     status_text = status_params[:status]
     visibility = status_params[:visibility]
-
+  
     if status_text.include?('!local')
       status_text = status_text.gsub('!local', '').strip
       visibility = :not_federated
     end
+  
+    # Recursive check for parent visibility with max depth of 20
+    if @thread.present?
+      parent_status = @thread
+      depth = 0
+  
+      while parent_status.present? && depth < MAX_DEPTH_CHECK_NOT_FEDERATED
+        if parent_status.visibility == 'not_federated'
+          visibility = :not_federated
+          break
+        end
+        parent_status = parent_status.in_reply_to
+        depth += 1
+      end
+    end
+  
 
     @status = PostStatusService.new.call(
       current_user.account,
@@ -179,7 +196,7 @@ class Api::V1::StatusesController < Api::BaseController
 
     authorize @status, :show?
 
-    if current_user.role == 'superbot'
+    if current_user.role == 'Admin'
       target_user = User.find_by(id: params[:user_id])
       if target_user.nil?
         render json: { error: 'User not found' }, status: 404

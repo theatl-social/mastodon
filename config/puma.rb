@@ -14,7 +14,7 @@ else
 end
 
 environment ENV.fetch('RAILS_ENV') { 'development' }
-workers     ENV.fetch('WEB_CONCURRENCY') { 2 }.to_i
+workers     ENV.fetch('WEB_CONCURRENCY') { 2 }.to_i if Process.respond_to?(:fork)
 
 preload_app!
 
