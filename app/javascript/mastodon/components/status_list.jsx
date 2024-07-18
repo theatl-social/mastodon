@@ -103,7 +103,7 @@ export default class StatusList extends ImmutablePureComponent {
     const payload = {
       account_id: accountId,
       account_uri: accountUri,
-      additional_posts_to_collect: 20,
+      additional_posts_to_collect: 25,
     };
 
     // Make the API call

@@ -107,6 +107,8 @@ class Account < ApplicationRecord
   validates :inbox_url, absence: true, if: :local?, on: :create
   validates :shared_inbox_url, absence: true, if: :local?, on: :create
   validates :followers_url, absence: true, if: :local?, on: :create
+  validates :membership_level, numericality: { only_integer: true }, allow_nil: true
+
 
   scope :remote, -> { where.not(domain: nil) }
   scope :local, -> { where(domain: nil) }

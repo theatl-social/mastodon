@@ -23,6 +23,8 @@ import HeaderContainer from './containers/header_container';
 import {createRef} from 'react';
 const emptyList = ImmutableList();
 import { useState } from 'react';
+import { LoadGap } from 'mastodon/components/load_gap';
+import { LoadMore } from 'mastodon/components/load_more';
 
 const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = false }) => {
   const accountId = id || state.getIn(['accounts_map', normalizeForLookup(acct)]);
@@ -61,13 +63,15 @@ const mapStateToProps = (state, { params: { acct, id, tagged }, withReplies = fa
 
 
 
-// if the user is on a remote profile and additional posts are available, this component will be displayed
+
 const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [buttonText, setButtonText] = useState('Request more posts');
 
   const handleClick = () => {
     setIsDisabled(true);
+    setIsLoading(true);
     setButtonText('Loading...');
     reloadHandler();
 
@@ -77,19 +81,30 @@ const RemoteHint = ({ statusIds, handleLoadMore, reloadHandler }) => {
 
     setTimeout(() => {
       setIsDisabled(false);
+      setIsLoading(false);
       setButtonText('Request more posts');
     }, 10000);
   };
 
+  const handleLoadMoreClick = () => {
+    const maxId = Math.max(...statusIds);
+    console.log("The maxId is: " + maxId)
+    handleLoadMore(maxId);
+  };
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '10px', margin: '10px' }}>
+    <div>
+    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', padding: '10px', margin: '10px' }}>
       <button
         className='button'
         onClick={handleClick}
         disabled={isDisabled}
+        style={{ margin: '5px' }}
       >
         {buttonText}
       </button>
+    </div>
+    <LoadMore onClick={handleLoadMoreClick} />
     </div>
   );
 };

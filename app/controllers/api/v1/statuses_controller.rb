@@ -67,7 +67,16 @@ class Api::V1::StatusesController < Api::BaseController
       if parent_status.visibility == 'not_federated'
         return :not_federated
       end
-      parent_status = parent_status.in_reply_to_id.present? ? parent_status.in_reply_to : nil
+      # Print all methods
+      # puts "Methods:"
+      # puts parent_status.methods.sort
+
+      # # Print all instance variables and their values
+      # puts "\nInstance Variables:"
+      # parent_status.instance_variables.each do |var|
+      #   puts "#{var} = #{parent_status.instance_variable_get(var).inspect}"
+      # end
+      parent_status = parent_status.in_reply_to_id.present? ? Status.find(parent_status.in_reply_to_id) : nil
       depth += 1
     end
   

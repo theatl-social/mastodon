@@ -101,7 +101,7 @@ WORKDIR /opt/mastodon
 # # Precompile assets
 # RUN OTP_SECRET=precompile_placeholder SECRET_KEY_BASE=precompile_placeholder rails assets:precompile
 # # Precompile assets
-# RUN OTP_SECRET=precompile_placeholder SECRET_KEY_BASE=precompile_placeholder rails assets:precompile
+RUN OTP_SECRET=3125e0841dc38409d4b479377053068a455c6695007c95267210827ab1b1589530446cb60fdf71abaf8c555823afb963777969e8236dbf2c52c8c180470003a6 SECRET_KEY_BASE=31b71b4bb7746b4750084e8ba14f877c132efda49dd51f805782291616ae58e3fdbeed5068e8ea7eba492e50e2f013fb4a1f94a6d51e00951e770a08d79ce0b7 rails assets:precompile
 
 # # Set the work dir and the container entry point
 # # Set the work dir and the container entry point

@@ -109,7 +109,7 @@ class Header extends PureComponent {
     return (
       <div className='ui__header'>
         <Link to='/' className='ui__header__logo'>
-          <img src={headerLogo} alt='theATLSocial Logo' height='55px' width='100%'/>
+          <img src={headerLogo} alt='theATLSocial Logo' height='55px' width='109px'/>
    
         </Link>
 
