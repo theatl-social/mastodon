@@ -57,10 +57,14 @@ services:
   web:
     build: .
 <<<<<<< HEAD
+<<<<<<< HEAD
     image: ghcr.io/mastodon/mastodon:v4.2.10
 =======
     image: ghcr.io/mastodon/mastodon:v4.2.5
 >>>>>>> 60a145d6d (updating patch version)
+=======
+    image: ghcr.io/mastodon/mastodon:v4.2.8
+>>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
     restart: always
     env_file: .env.production
     command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
@@ -82,10 +86,14 @@ services:
   streaming:
     build: .
 <<<<<<< HEAD
+<<<<<<< HEAD
     image: ghcr.io/mastodon/mastodon:v4.2.10
 =======
     image: ghcr.io/mastodon/mastodon:v4.2.5
 >>>>>>> 60a145d6d (updating patch version)
+=======
+    image: ghcr.io/mastodon/mastodon:v4.2.8
+>>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
     restart: always
     env_file: .env.production
     command: node ./streaming
@@ -104,10 +112,14 @@ services:
   sidekiq:
     build: .
 <<<<<<< HEAD
+<<<<<<< HEAD
     image: ghcr.io/mastodon/mastodon:v4.2.10
 =======
     image: ghcr.io/mastodon/mastodon:v4.2.5
 >>>>>>> 60a145d6d (updating patch version)
+=======
+    image: ghcr.io/mastodon/mastodon:v4.2.8
+>>>>>>> 5ce383524 (Bump version to v4.2.8 (#29370))
     restart: always
     env_file: .env.production
     command: bundle exec sidekiq
