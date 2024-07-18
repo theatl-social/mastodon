@@ -13,7 +13,11 @@ module Mastodon
     end
 
     def patch
+<<<<<<< HEAD
       10-theatlsocial-20240718
+=======
+      '3-theatlsocial-20241007'
+>>>>>>> 24a4091f3 (fixed version issue)
     end
 
     def default_prerelease
