@@ -1098,8 +1098,8 @@ en:
       title: Login to %{domain}
     sign_up:
       manual_review: Sign-ups on %{domain} go through manual review by our moderators. To help us process your registration, write a bit about yourself and why you want an account on %{domain}.
-      preamble: With an account on this server, you'll be able to follow any other person on other servers in the Mastodon network, regardless of where their account is hosted.
-      title: Let's get you set up on %{domain}.
+      preamble: With an account on theATL.social, not only can you follow others on this instance, you can follow and interact with other users in the Fediverse from around the world!
+      title: Let's get you set up on theATL.social!
     status:
       account_status: Account status
       confirming: Waiting for e-mail confirmation to be completed.

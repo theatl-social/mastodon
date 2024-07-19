@@ -31,14 +31,14 @@ class StatusesController < ApplicationController
 
       format.json do
         expires_in 3.minutes, public: true if @status.distributable? && public_fetch_mode?
-        render_with_cache json: @status, content_type: 'application/activity+json', serializer: ActivityPub::NoteSerializer, adapter: ActivityPub::Adapter
+        render_with_cache json: @status, content_type: 'application/activity+json', serializer: ActivityPub::NoteSerializer, adapter: ActivityPub::Adapter, scope: { user_agent: request.user_agent }
       end
     end
   end
 
   def activity
     expires_in 3.minutes, public: @status.distributable? && public_fetch_mode?
-    render_with_cache json: ActivityPub::ActivityPresenter.from_status(@status), content_type: 'application/activity+json', serializer: ActivityPub::ActivitySerializer, adapter: ActivityPub::Adapter
+    render_with_cache json: ActivityPub::ActivityPresenter.from_status(@status), content_type: 'application/activity+json', serializer: ActivityPub::ActivitySerializer, adapter: ActivityPub::Adapter, scope: { user_agent: request.user_agent }
   end
 
   def embed

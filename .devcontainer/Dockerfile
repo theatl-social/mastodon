@@ -1,4 +1,4 @@
-FROM --platform=amd64 mcr.microsoft.com/devcontainers/ruby:1-3.3-bookworm
+FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/ruby:1-3.3-bookworm
 
 # Install Rails
 RUN su vscode -c "gem install rails webdrivers"
@@ -25,7 +25,8 @@ RUN apt-get update && \
         ca-certificates \
         libreadline8 \
         python3 \
-        shared-mime-info
+        shared-mime-info \ 
+        nodejs
     # bundle config set --local deployment 'true' && \
     # bundle config set --local without 'development test' && \
     # bundle config set silence_root_warning true && \

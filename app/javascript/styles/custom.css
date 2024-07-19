@@ -556,3 +556,7 @@ a.column-link {
   background-size: cover;
   background-blend-mode: darken;
 }
+
+.new-user-signup-details{
+  margin-top: 50px;
+}

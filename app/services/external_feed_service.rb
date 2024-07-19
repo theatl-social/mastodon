@@ -96,6 +96,9 @@ class ExternalFeedService
         filtered_posts.each do |post|
 
           @collected_posts << post
+          
+          puts "COLLECTED POSTS: #{@collected_posts.size}"
+          puts "ADDITIONAL POSTS TO COLLECT: #{@additional_posts_to_collect}"
 
           if @collected_posts.size >= @additional_posts_to_collect
             send_collected_posts_to_remote_service

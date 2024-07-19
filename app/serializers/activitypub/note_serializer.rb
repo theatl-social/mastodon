@@ -176,6 +176,15 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
     object.preloadable_poll&.voters_count
   end
 
+  def visibility
+    user_agent = scope[:user_agent]
+
+    if user_agent.include?("Ice") # if user agent is IceCubes
+      "public" # or any visibility you want
+    else
+      object.visibility
+  end
+
   class MediaAttachmentSerializer < ActivityPub::Serializer
     context_extensions :blurhash, :focal_point
 
