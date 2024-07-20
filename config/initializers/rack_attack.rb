@@ -66,22 +66,27 @@ class Rack::Attack
     IpBlock.blocked?(req.remote_ip)
   end
 
+
+
   # Helper method to fetch the throttle key based on membership level
   def self.throttle_by_membership(req)
     if req.authenticated_user_id.present?
       user_id = req.authenticated_user_id
-      user = User.find_by(id: user_id)
-      if user
-        if user && (user.membership_level.nil? || user.membership_level.zero?)
+      account_id = User.find_by(id: user_id)&.account_id
+      account = Account.find_by(id: account_id)
+      if account
+        membership_level = account.membership&.level || 0
+        if membership_level.zero?
           "throttle_authenticated_api/membership_level_0"
-        elsif user && (user.membership_level >= 10)
+        elsif membership_level >= 10
           "throttle_authenticated_api/membership_level_1_or_higher"
         else
           "throttle_authenticated_api/unauthenticated"
         end
       end
+    else
+      "throttle_authenticated_api/unauthenticated"
     end
-    "throttle_authenticated_api/unauthenticated"
   end
 
   # Throttle based on membership level
@@ -106,6 +111,9 @@ class Rack::Attack
       req.throttleable_remote_ip if key.include?("unauthenticated")
     end
   end
+  
+  
+  
 
   # # Throttle unauthenticated requests separately
   # throttle('throttle_per_token_api', limit: 500, period: 5.minutes) do |req|

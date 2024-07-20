@@ -394,10 +394,8 @@ class Header extends ImmutablePureComponent {
     // TODO for tomorrow.
     
 
-    // console.log(account);
-
     if (account.get('membership_level')){
-      badges.push(<AccountBadges key='account-badge' account={account} />)
+      badges.push(<AccountBadges key='account-badge' account={account} />);
     }
 
     return (

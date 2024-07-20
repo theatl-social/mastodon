@@ -234,7 +234,7 @@ namespace :api, format: false do
           post :unsuspend
           post :approve
           post :reject
-          post :membership_level, to: 'accounts#update_membership_level'  # Change this line
+          post :membership_level, to: 'accounts#update_membership_level'
         end
 
         resource :action, only: [:create], controller: 'account_actions'

@@ -178,7 +178,8 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
 
   def visibility
     user_agent = scope[:user_agent]
-
+    # print the user agent to the console
+    puts "***** User Agent: #{user_agent}"
     if user_agent.include?("Ice") # if user agent is IceCubes
       "public" # or any visibility you want
     else

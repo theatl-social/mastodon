@@ -134,10 +134,10 @@ class REST::AccountSerializer < ActiveModel::Serializer
     object.memorial?
   end
 
-  def memberhsip_level
-    object.membership_level
+  def membership_level
+    object.membership&.level
   end
-
+  
   def roles
     if object.suspended? || object.user.nil?
       []

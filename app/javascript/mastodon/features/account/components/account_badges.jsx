@@ -4,35 +4,39 @@ import React from 'react';
 const AccountBadges = ({ account }) => {
 
     // get the user id from the account object
-    const userId = account.get('id');
+    // const userId = account.get('id');
+
+    const membershipLevel = account.get('membership_level');
+
+
 
     return (
         <div className='account-member'>
             {/* Existing badges rendering logic */}
 
             {/* Add membership level badge */}
-            {account.get('membership_level') === 10 && (
+            {membershipLevel === 10 && (
                 <span className='badge membership-badge'>
                     <i className='fa fa-star' style={{ color: 'yellow' }} />
                     {" "}
                     {"Member"}
                 </span>
             )}
-            {account.get('membership_level') === 20 && (
+            {membershipLevel === 20 && (
                 <span className='badge membership-badge'>
                     <i className='fa fa-star' style={{ color: 'yellow' }} />
                     {" "}
                     {"Patron"}
                 </span>
             )}
-            {account.get('membership_level') === 40 && (
+            {membershipLevel === 40 && (
                 <span className='badge membership-badge'>
                     <i className='fa fa-star' style={{ color: 'yellow' }} />
                     {" "}
                     {"Sponsor"}
                 </span>
             )}
-            {account.get('membership_level') > 40 && (
+            {membershipLevel > 40 && (
                 <span className='badge membership-badge'>
                     <i className='fa fa-star' style={{ color: 'yellow' }} />
                     {" "}
@@ -40,7 +44,7 @@ const AccountBadges = ({ account }) => {
                 </span>
             )}
 
-            {!account.get('membership_level') && (
+            {!membershipLevel && (
                 <span className='badge membership-badge'>
                     test
                 </span>

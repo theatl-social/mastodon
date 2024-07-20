@@ -52,6 +52,7 @@
 #  requested_review_at           :datetime
 #  indexable                     :boolean          default(FALSE), not null
 #  membership_level              :integer
+#  new_field_name                :string
 #
 
 class Account < ApplicationRecord
@@ -85,6 +86,9 @@ class Account < ApplicationRecord
   include AccountSearch
   include AccountStatusesSearch
 
+
+  has_one :membership, dependent: :destroy
+  
   enum protocol: { ostatus: 0, activitypub: 1 }
   enum suspension_origin: { local: 0, remote: 1 }, _prefix: true
 

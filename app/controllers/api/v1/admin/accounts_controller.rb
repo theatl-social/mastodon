@@ -95,13 +95,22 @@ class Api::V1::Admin::AccountsController < Api::BaseController
 
   def update_membership_level
     account = Account.find(params[:id])
-    authorize @account, :update_membership_level?
-    membership_level = params[:membership_level]
+    authorize account, :update_membership_level?
+    membership_level = params[:level]
   
-    if account.update(membership_level: membership_level)
-      render json: { message: 'Membership level updated successfully' }, status: :ok
+    if account.membership
+      if account.membership.update(level: membership_level)
+        render json: { message: 'Membership level updated successfully' }, status: :ok
+      else
+        render json: { error: account.membership.errors.full_messages }, status: :unprocessable_entity
+      end
     else
-      render json: { error: account.errors.full_messages }, status: :unprocessable_entity
+      membership = account.build_membership(level: membership_level, last_updated: Time.current)
+      if membership.save
+        render json: { message: 'Membership level updated successfully' }, status: :ok
+      else
+        render json: { error: membership.errors.full_messages }, status: :unprocessable_entity
+      end
     end
   rescue Pundit::NotAuthorizedError
     render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
