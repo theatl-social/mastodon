@@ -53,6 +53,7 @@ export const COMPOSE_UNMOUNT = 'COMPOSE_UNMOUNT';
 
 export const COMPOSE_SENSITIVITY_CHANGE  = 'COMPOSE_SENSITIVITY_CHANGE';
 export const COMPOSE_SPOILERNESS_CHANGE  = 'COMPOSE_SPOILERNESS_CHANGE';
+export const COMPOSE_ISFEDERATED_CHANGE  = 'COMPOSE_ISFEDERATED_CHANGE';
 export const COMPOSE_SPOILER_TEXT_CHANGE = 'COMPOSE_SPOILER_TEXT_CHANGE';
 export const COMPOSE_VISIBILITY_CHANGE   = 'COMPOSE_VISIBILITY_CHANGE';
 export const COMPOSE_COMPOSING_CHANGE    = 'COMPOSE_COMPOSING_CHANGE';
@@ -168,6 +169,7 @@ export function submitCompose(routerHistory) {
     const status   = getState().getIn(['compose', 'text'], '');
     const media    = getState().getIn(['compose', 'media_attachments']);
     const statusId = getState().getIn(['compose', 'id'], null);
+    const is_federated = getState().getIn(['compose', 'is_federated'], true);
 
     if ((!status || !status.length) && media.size === 0) {
       return;
@@ -200,6 +202,7 @@ export function submitCompose(routerHistory) {
       method: statusId === null ? 'post' : 'put',
       data: {
         status,
+        is_federated,
         in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
         media_ids: media.map(item => item.get('id')),
         media_attributes,
@@ -734,6 +737,13 @@ export const changeComposeLanguage = language => ({
 export function changeComposeSpoilerness() {
   return {
     type: COMPOSE_SPOILERNESS_CHANGE,
+  };
+}
+
+// add a new action creator for changing the isFederated state
+export function changeComposeIsFederated() {
+  return {
+    type: COMPOSE_ISFEDERATED_CHANGE,
   };
 }
 

@@ -31,6 +31,7 @@ class PostStatusService < BaseService
   # @option [String] :idempotency Optional idempotency key
   # @option [Boolean] :with_rate_limit
   # @option [Enumerable] :allowed_mentions Optional array of expected mentioned account IDs, raises `UnexpectedMentionsError` if unexpected accounts end up in mentions
+  # @option [Boolean] :is_federated Optional boolean to indicate if the status should be federated
   # @return [Status]
   def call(account, options = {})
     @account     = account
@@ -81,6 +82,7 @@ class PostStatusService < BaseService
     # the media attachments when the status is created
     ApplicationRecord.transaction do
       @status.save!
+      @status.create_status_extra!(is_federated: @options.fetch(:is_federated, true))
     end
   end
 
@@ -106,7 +108,6 @@ class PostStatusService < BaseService
 
       # The following transaction block is needed to wrap the UPDATEs to
       # the media attachments when the scheduled status is created
-
       ApplicationRecord.transaction do
         @status = @account.scheduled_statuses.create!(scheduled_status_attributes)
       end

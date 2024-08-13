@@ -27,7 +27,7 @@
 #  edited_at                    :datetime
 #  trendable                    :boolean
 #  ordered_media_attachment_ids :bigint(8)        is an Array
-#
+#  is_federated                 :boolean          default(TRUE), not null
 
 class Status < ApplicationRecord
   include Discard::Model
@@ -50,7 +50,7 @@ class Status < ApplicationRecord
   update_index('statuses', :proper)
   update_index('public_statuses', :proper)
 
-  enum visibility: { public: 0, unlisted: 1, private: 2, direct: 3, limited: 4, not_federated: 50 }, _suffix: :visibility
+  enum visibility: { public: 0, unlisted: 1, private: 2, direct: 3, limited: 4 }, _suffix: :visibility
 
   belongs_to :application, class_name: 'Doorkeeper::Application', optional: true
 
@@ -85,6 +85,9 @@ class Status < ApplicationRecord
   has_one :status_stat, inverse_of: :status
   has_one :poll, inverse_of: :status, dependent: :destroy
   has_one :trend, class_name: 'StatusTrend', inverse_of: :status
+  has_one :status_extra, dependent: :destroy
+
+
 
   validates :uri, uniqueness: true, presence: true, unless: :local?
   validates :text, presence: true, unless: -> { with_media? || reblog? }
@@ -96,6 +99,7 @@ class Status < ApplicationRecord
   accepts_nested_attributes_for :poll
 
   default_scope { recent.kept }
+
 
   scope :recent, -> { reorder(id: :desc) }
   scope :remote, -> { where(local: false).where.not(uri: nil) }
@@ -166,8 +170,21 @@ class Status < ApplicationRecord
                    thread: { account: :account_stat }
 
   delegate :domain, to: :account, prefix: true
+  delegate :is_federated, to: :status_extra, allow_nil: true
+
+
+  attribute :is_federated, :boolean, default: true
 
   REAL_TIME_WINDOW = 6.hours
+
+  def is_federated
+    status_extra&.is_federated.nil? ? true : status_extra.is_federated
+  end
+
+  # Update the distributable? method to use is_federated?
+  def distributable?
+    (public_visibility? || unlisted_visibility?) && (respond_to?(:is_federated?) ? is_federated? : true)
+  end
 
   def cache_key
     "v3:#{super}"

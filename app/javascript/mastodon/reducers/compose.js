@@ -29,6 +29,7 @@ import {
   COMPOSE_TAG_HISTORY_UPDATE,
   COMPOSE_SENSITIVITY_CHANGE,
   COMPOSE_SPOILERNESS_CHANGE,
+  COMPOSE_ISFEDERATED_CHANGE,
   COMPOSE_SPOILER_TEXT_CHANGE,
   COMPOSE_VISIBILITY_CHANGE,
   COMPOSE_LANGUAGE_CHANGE,
@@ -73,6 +74,7 @@ const initialState = ImmutableMap({
   is_submitting: false,
   is_changing_upload: false,
   is_uploading: false,
+  is_federated: true,
   progress: 0,
   isUploadingThumbnail: false,
   thumbnailProgress: 0,
@@ -118,6 +120,7 @@ function clearAll(state) {
     map.set('text', '');
     map.set('spoiler', false);
     map.set('spoiler_text', '');
+    map.set('is_federated', true);
     map.set('is_submitting', false);
     map.set('is_changing_upload', false);
     map.set('in_reply_to', null);
@@ -300,7 +303,16 @@ export default function compose(state = initialState, action) {
 
       map.set('idempotencyKey', uuid());
     });
-  case COMPOSE_SPOILERNESS_CHANGE:
+ 
+    // add for COMPOSE_ISFEDERATED_CHANGE
+  case COMPOSE_ISFEDERATED_CHANGE:
+    return state.withMutations(map => {
+      map.set('is_federated', !state.get('is_federated'));
+      map.set('idempotencyKey', uuid());
+    });
+
+
+    case COMPOSE_SPOILERNESS_CHANGE:
     return state.withMutations(map => {
       map.set('spoiler', !state.get('spoiler'));
       map.set('idempotencyKey', uuid());

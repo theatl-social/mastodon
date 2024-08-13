@@ -87,10 +87,10 @@ class Api::V1::StatusesController < Api::BaseController
     status_text = status_params[:status]
     visibility = check_parent_visibility(@thread, status_params[:visibility])
   
-    if status_text.include?('!local')
-      status_text = status_text.gsub('!local', '').strip
-      visibility = :not_federated
-    end
+    # if status_text.include?('!local')
+    #   status_text = status_text.gsub('!local', '').strip
+    #   visibility = :not_federated
+    # end
   
     @status = PostStatusService.new.call(
       current_user.account,
@@ -106,7 +106,9 @@ class Api::V1::StatusesController < Api::BaseController
       poll: status_params[:poll],
       allowed_mentions: status_params[:allowed_mentions],
       idempotency: request.headers['Idempotency-Key'],
-      with_rate_limit: true
+      with_rate_limit: true,
+      # is_federated: status_params.fetch(:is_federated, true)
+      is_federated: status_params[:is_federated]
     )
 
     render json: @status, serializer: @status.is_a?(ScheduledStatus) ? REST::ScheduledStatusSerializer : REST::StatusSerializer
@@ -176,6 +178,7 @@ class Api::V1::StatusesController < Api::BaseController
       :visibility,
       :language,
       :scheduled_at,
+      :is_federated,
       allowed_mentions: [],
       media_ids: [],
       media_attributes: [

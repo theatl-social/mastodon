@@ -25,7 +25,6 @@ import Video from '../../video';
 import Card from './card';
 
 const messages = defineMessages({
-  not_federated_short: {id: 'privacy.not_federated.short', defaultMessage: 'Only for theATL.social'},
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
   unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Unlisted' },
   private_short: { id: 'privacy.private.short', defaultMessage: 'Followers only' },
@@ -228,7 +227,6 @@ class DetailedStatus extends ImmutablePureComponent {
 
     const visibilityIconInfo = {
       'public': { icon: 'globe', text: intl.formatMessage(messages.public_short) },
-      'not_federated': { icon: 'home', text: intl.formatMessage(messages.not_federated_short) },
       'unlisted': { icon: 'unlock', text: intl.formatMessage(messages.unlisted_short) },
       'private': { icon: 'lock', text: intl.formatMessage(messages.private_short) },
       'direct': { icon: 'at', text: intl.formatMessage(messages.direct_short) },
