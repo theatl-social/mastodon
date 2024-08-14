@@ -83,7 +83,10 @@ class REST::StatusSerializer < ActiveModel::Serializer
   end
 
   def content
-    status_content_format(object)
+    # status_content_format(object)
+    content = status_content_format(object)
+    content.prepend(":localonly:\n\n\n") unless object.is_federated
+    content
   end
 
   def url

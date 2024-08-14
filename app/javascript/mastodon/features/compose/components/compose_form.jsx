@@ -296,7 +296,7 @@ class ComposeForm extends ImmutablePureComponent {
               <PrivacyDropdownContainer disabled={this.props.isEditing} />
               <SpoilerButtonContainer />
               <LanguageDropdown />
-              <IsFederatedSelection />
+              <IsFederatedSelection disabled={this.props.isEditing} />
             </div>
 
             <div className='character-counter__wrapper'>

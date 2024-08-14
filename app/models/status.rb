@@ -138,6 +138,8 @@ class Status < ApplicationRecord
   before_validation :set_visibility
   before_validation :set_conversation
   before_validation :set_local
+  # before_validation :check_for_local_prefix
+
 
   around_create Mastodon::Snowflake::Callbacks
 
@@ -178,7 +180,15 @@ class Status < ApplicationRecord
   REAL_TIME_WINDOW = 6.hours
 
   def is_federated
-    status_extra&.is_federated.nil? ? true : status_extra.is_federated
+    if self.text&.start_with?(':localonly:')
+      self.is_federated = false
+      self.text = self.text.sub(/^:localonly:\s*/, '') # Removes ":localonly:" and any following whitespace
+      # set status_extra.is_federated to false
+      self.status_extra&.is_federated = false
+      false
+    else
+      status_extra&.is_federated.nil? ? true : status_extra.is_federated
+    end
   end
 
   # Update the distributable? method to use is_federated?
@@ -392,6 +402,7 @@ class Status < ApplicationRecord
   end
 
   private
+
 
   def update_status_stat!(attrs)
     return if marked_for_destruction? || destroyed?

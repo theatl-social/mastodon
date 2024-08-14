@@ -344,14 +344,18 @@ class Status extends ImmutablePureComponent {
     this.node = c;
   };
 
+
+
   render () {
     const { intl, hidden, featured, unread, showThread, scrollKey, pictureInPicture, previousId, nextInReplyToId, rootId } = this.props;
 
     let { status, account, ...other } = this.props;
 
+  
     if (status === null) {
       return null;
     }
+
 
     const handlers = this.props.muted ? {} : {
       reply: this.handleHotkeyReply,
@@ -374,7 +378,7 @@ class Status extends ImmutablePureComponent {
         <HotKeys handlers={handlers}>
           <div ref={this.handleRef} className={classNames('status__wrapper', { focusable: !this.props.muted })} tabIndex={0}>
             <span>{status.getIn(['account', 'display_name']) || status.getIn(['account', 'username'])}</span>
-            <span>{status.get('content')}</span>
+            <span>{ status.get('content')}</span>
           </div>
         </HotKeys>
       );

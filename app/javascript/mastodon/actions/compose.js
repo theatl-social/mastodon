@@ -202,7 +202,7 @@ export function submitCompose(routerHistory) {
       method: statusId === null ? 'post' : 'put',
       data: {
         status,
-        is_federated,
+        is_federated: getState().getIn(['compose', 'is_federated'], true),
         in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
         media_ids: media.map(item => item.get('id')),
         media_attributes,

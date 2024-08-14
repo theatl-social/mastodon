@@ -59,6 +59,8 @@ class DetailedStatus extends ImmutablePureComponent {
     height: null,
   };
 
+  
+  
   handleAccountClick = (e) => {
     if (e.button === 0 && !(e.ctrlKey || e.metaKey) && this.context.router) {
       e.preventDefault();
@@ -295,11 +297,16 @@ class DetailedStatus extends ImmutablePureComponent {
     const {statusContentProps, hashtagBar} = getHashtagBarForStatus(status);
     const expanded = !status.get('hidden') || status.get('spoiler_text').length === 0;
 
+    // Check if status is local or federated (default to true)
+    const isFederated = status.get('is_federated') ?? true;
+
+
     return (
       <div style={outerStyle}>
         <div ref={this.setRef} className={classNames('detailed-status', { compact })}>
+          
           {status.get('visibility') === 'direct' && (
-            <div className='status__prepend'>
+            <div className='status__prepend'> 
               <div className='status__prepend-icon-wrapper'><Icon id='at' className='status__prepend-icon' fixedWidth /></div>
               <FormattedMessage id='status.direct_indicator' defaultMessage='Private mention' />
             </div>
@@ -325,7 +332,16 @@ class DetailedStatus extends ImmutablePureComponent {
             <a className='detailed-status__datetime' href={`/@${status.getIn(['account', 'acct'])}/${status.get('id')}`} target='_blank' rel='noopener noreferrer'>
               <FormattedDate value={new Date(status.get('created_at'))} hour12={false} year='numeric' month='short' day='2-digit' hour='2-digit' minute='2-digit' />
             </a>{edited}{visibilityLink}{applicationLink}{reblogLink} · {favouriteLink}
+
+            {isFederated === false ? <span
+                style={{fontSize: 'small', backgroundColor: 'lightblue', color: 'black', padding: '2px 4px', marginLeft: '6px', borderRadius: '3px'}}
+
+                >
+                  LOCAL
+                  </span> : null}
+
           </div>
+          
         </div>
       </div>
     );

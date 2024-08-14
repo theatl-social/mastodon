@@ -157,7 +157,7 @@ body.embed .button.logo-button {
 
 .theme-default .account-card,
 .scrollable .account-card {
-  background-color: #02111b;
+  background-color: lightgray;
   border: 1px solid #ffd100;
 }
 

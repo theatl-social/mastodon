@@ -15,14 +15,32 @@ import { autoPlayGif, languages as preloadedLanguages } from 'mastodon/initial_s
 
 const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
 
+
+// remove the ":localonly:" prefix from the text if it exists,
+// only used for local-only statuses on the local instance
+function cleanLocalOnlyText(text) {
+  // console.log("IN TEXT: ", text);
+  // Use a regular expression to check if the text starts with ":localonly:" and remove it
+  if (/^:localonly:\s*/.test(text)) {
+    // console.log("CLEANED TEXT: ", text.replace(/^:localonly:\s*/, ''));
+    return text.replace(/^:localonly:\s*/, '');
+  }
+  return text;
+}
+
 /**
  *
  * @param {any} status
  * @returns {string}
  */
 export function getStatusContent(status) {
-  return status.getIn(['translation', 'contentHtml']) || status.get('contentHtml');
+;
+  // console.log("GET STATUS CONTENT: ", status.getIn(['translation', 'contentHtml']) || status.get('contentHtml'));
+  // console.log("CLEANED TEXT: ", cleanLocalOnlyText(status.getIn(['translation', 'contentHtml']) || status.get('contentHtml')));
+  return cleanLocalOnlyText(status.getIn(['translation', 'contentHtml']) || status.get('contentHtml'));
 }
+
+
 
 class TranslateButton extends PureComponent {
 
@@ -233,6 +251,8 @@ class StatusContent extends PureComponent {
   setRef = (c) => {
     this.node = c;
   };
+
+
 
   render () {
     const { status, intl, statusContent } = this.props;

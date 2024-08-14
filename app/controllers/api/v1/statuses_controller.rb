@@ -57,35 +57,29 @@ class Api::V1::StatusesController < Api::BaseController
     render json: @context, serializer: REST::ContextSerializer, relationships: StatusRelationshipsPresenter.new(statuses, current_user&.account_id)
   end
 
-  def check_parent_visibility(thread, initial_visibility)
-    return initial_visibility unless thread.present?
+  def check_parent_visibility(thread, status_is_federated)
+    return status_is_federated unless thread.present?
   
     parent_status = thread
     depth = 0
   
     while parent_status.present? && depth < MAX_DEPTH_CHECK_NOT_FEDERATED
-      if parent_status.visibility == 'not_federated'
-        return :not_federated
+      if parent_status.respond_to?(:is_federated) && parent_status.is_federated == false
+        return parent_status.is_federated
+      elsif parent_status.is_a?(Hash) && parent_status[:is_federated] == false
+        return parent_status[:is_federated]
       end
-      # Print all methods
-      # puts "Methods:"
-      # puts parent_status.methods.sort
-
-      # # Print all instance variables and their values
-      # puts "\nInstance Variables:"
-      # parent_status.instance_variables.each do |var|
-      #   puts "#{var} = #{parent_status.instance_variable_get(var).inspect}"
-      # end
+  
       parent_status = parent_status.in_reply_to_id.present? ? Status.find(parent_status.in_reply_to_id) : nil
       depth += 1
     end
   
-    initial_visibility
+    status_is_federated
   end
 
   def create
     status_text = status_params[:status]
-    visibility = check_parent_visibility(@thread, status_params[:visibility])
+    updated_is_federated = check_parent_visibility(@thread, status_params[:is_federated])
   
     # if status_text.include?('!local')
     #   status_text = status_text.gsub('!local', '').strip
@@ -99,7 +93,7 @@ class Api::V1::StatusesController < Api::BaseController
       media_ids: status_params[:media_ids],
       sensitive: status_params[:sensitive],
       spoiler_text: status_params[:spoiler_text],
-      visibility: visibility,
+      visibility: status_params[:visibility],
       language: status_params[:language],
       scheduled_at: status_params[:scheduled_at],
       application: doorkeeper_token.application,
@@ -108,7 +102,7 @@ class Api::V1::StatusesController < Api::BaseController
       idempotency: request.headers['Idempotency-Key'],
       with_rate_limit: true,
       # is_federated: status_params.fetch(:is_federated, true)
-      is_federated: status_params[:is_federated]
+      is_federated: updated_is_federated
     )
 
     render json: @status, serializer: @status.is_a?(ScheduledStatus) ? REST::ScheduledStatusSerializer : REST::StatusSerializer
@@ -193,7 +187,9 @@ class Api::V1::StatusesController < Api::BaseController
         :expires_in,
         options: [],
       ]
-    )
+    ).tap do |whitelisted|
+      whitelisted[:poll] = nil unless params.key?(:poll)
+    end
   end
 
   def pagination_params(core_params)

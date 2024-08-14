@@ -347,6 +347,8 @@ export default function compose(state = initialState, action) {
       map.set('preselectDate', new Date());
       map.set('idempotencyKey', uuid());
 
+
+
       map.update('media_attachments', list => list.filter(media => media.get('unattached')));
 
       if (action.status.get('language') && !action.status.has('translation')) {
@@ -509,6 +511,9 @@ export default function compose(state = initialState, action) {
       map.set('idempotencyKey', uuid());
       map.set('sensitive', action.status.get('sensitive'));
       map.set('language', action.status.get('language'));
+
+      // add is_federated
+      map.set('is_federated', action.status.get('is_federated'));
 
       if (action.spoiler_text.length > 0) {
         map.set('spoiler', true);

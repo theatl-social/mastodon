@@ -25,6 +25,17 @@ class ActivityPub::DeliveryWorker
   def perform(json, source_account_id, inbox_url, options = {})
     @options        = options.with_indifferent_access
 
+    status = JSON.parse(json)['object'] # Assuming the status object is within the JSON payload
+
+    # print the is_federated status in bright yellow with lots of ascii before and after to make it stand out
+    # Log the is_federated status in bright yellow with lots of ascii before and after to make it stand out
+    Rails.logger.info("\n" * 10)
+    Rails.logger.info("is_federated: #{status['is_federated']}".yellow)
+    Rails.logger.info("\n" * 10)
+
+
+    return if status['is_federated'] == false
+  
     return unless @options[:bypass_availability] || DeliveryFailureTracker.available?(inbox_url)
 
     @json           = json
