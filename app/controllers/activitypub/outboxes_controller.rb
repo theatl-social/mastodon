@@ -68,7 +68,8 @@ class ActivityPub::OutboxesController < ActivityPub::BaseController
       Status,
       LIMIT,
       params_slice(:max_id, :min_id, :since_id)
-    )
+    ).select { |status| status.is_federated.nil? || status.is_federated == true }
+   
   end
 
   def page_requested?

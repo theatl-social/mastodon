@@ -9,7 +9,7 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
              :in_reply_to, :published, :url,
              :attributed_to, :to, :cc, :sensitive,
              :atom_uri, :in_reply_to_atom_uri,
-             :conversation
+             :conversation, :is_federated
 
   attribute :content
   attribute :content_map, if: :language?
@@ -83,6 +83,11 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
   def published
     object.created_at.iso8601
   end
+
+  def is_federated
+    object.is_federated
+  end
+
 
   def updated
     object.edited_at.iso8601
@@ -177,13 +182,7 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
   end
 
   def visibility
-    user_agent = scope[:user_agent]
-    # print the user agent to the console
-    puts "***** User Agent: #{user_agent}"
-    if user_agent.include?("Ice") # if user agent is IceCubes
-      "public" # or any visibility you want
-    else
-      object.visibility
+    object.visibility
   end
 
   class MediaAttachmentSerializer < ActivityPub::Serializer

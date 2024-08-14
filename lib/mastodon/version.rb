@@ -13,7 +13,7 @@ module Mastodon
     end
 
     def patch
-      '10-theatlsocial-20240719'
+      '10-kirkwood-20240814-275'
     end
 
     def default_prerelease

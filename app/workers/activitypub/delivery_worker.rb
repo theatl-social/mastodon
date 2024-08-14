@@ -24,21 +24,30 @@ class ActivityPub::DeliveryWorker
 
   def perform(json, source_account_id, inbox_url, options = {})
     @options        = options.with_indifferent_access
-
-    status = JSON.parse(json)['object'] # Assuming the status object is within the JSON payload
-
-    # print the is_federated status in bright yellow with lots of ascii before and after to make it stand out
-    # Log the is_federated status in bright yellow with lots of ascii before and after to make it stand out
-    Rails.logger.info("\n" * 10)
-    Rails.logger.info("is_federated: #{status['is_federated']}".yellow)
-    Rails.logger.info("\n" * 10)
-
-
-    return if status['is_federated'] == false
+    
+    parsed_json = JSON.parse(json)
+    status = parsed_json['object']
   
+    # BEGIN DISTRIBUTION STOP
+    # If the status is not federated (either key), skip delivery
+    if status['is_federated'] == false || status['isFederated'] == false
+      Rails.logger.info("Skipping delivery of status #{status['id']} because it is marked as not federated")
+      return
+    end
+  
+    # Remove the is_federated and isFederated keys from the status
+    status.delete('is_federated')
+    status.delete('isFederated')
+  
+    # Recreate the JSON with the updated status
+    parsed_json['object'] = status
+    json_without_is_federated = JSON.generate(parsed_json)
+
+    # END DISTRIBUTION STOP
+
     return unless @options[:bypass_availability] || DeliveryFailureTracker.available?(inbox_url)
 
-    @json           = json
+    @json           = json_without_is_federated
     @source_account = Account.find(source_account_id)
     @inbox_url      = inbox_url
     @host           = Addressable::URI.parse(inbox_url).normalized_site
