@@ -179,14 +179,18 @@ class Status < ApplicationRecord
 
   REAL_TIME_WINDOW = 6.hours
 
+  # special case for the is_federated attribute - if the status contains :localonly: then it is not federated
+  # this would occur if user is typing in the compose box
   def is_federated
-    if self.text&.start_with?(':localonly:')
+    # if the status contains :localonly: then it is not federated
+    if self.text&.include(':localonly:')
+      # set is_federated to false
       self.is_federated = false
-      self.text = self.text.sub(/^:localonly:\s*/, '') # Removes ":localonly:" and any following whitespace
       # set status_extra.is_federated to false
       self.status_extra&.is_federated = false
       false
     else
+      # if the status does not contain :localonly: then it is federated
       status_extra&.is_federated.nil? ? true : status_extra.is_federated
     end
   end

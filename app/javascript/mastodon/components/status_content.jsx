@@ -21,10 +21,10 @@ const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
 function cleanLocalOnlyText(text) {
   // console.log("IN TEXT: ", text);
   // Use a regular expression to check if the text starts with ":localonly:" and remove it
-  if (/^:localonly:\s*/.test(text)) {
-    // console.log("CLEANED TEXT: ", text.replace(/^:localonly:\s*/, ''));
-    return text.replace(/^:localonly:\s*/, '');
-  }
+  // if (/^:localonly:\s*/.test(text)) {
+  //   // console.log("CLEANED TEXT: ", text.replace(/^:localonly:\s*/, ''));
+  //   return text.replace(/^:localonly:\s*/, '');
+  // }
   return text;
 }
 
