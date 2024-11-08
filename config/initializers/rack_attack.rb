@@ -66,11 +66,11 @@ class Rack::Attack
     IpBlock.blocked?(req.remote_ip)
   end
 
-  throttle('throttle_authenticated_api', limit: 1_500, period: 5.minutes) do |req|
+  throttle('throttle_authenticated_api', limit: 1_500, period: 1.minutes) do |req|
     req.authenticated_user_id if req.api_request?
   end
 
-  throttle('throttle_per_token_api', limit: 300, period: 5.minutes) do |req|
+  throttle('throttle_per_token_api', limit: 500, period: 5.minutes) do |req|
     req.authenticated_token_id if req.api_request?
   end
 
@@ -78,7 +78,7 @@ class Rack::Attack
     req.throttleable_remote_ip if req.api_request? && req.unauthenticated?
   end
 
-  throttle('throttle_api_media', limit: 30, period: 30.minutes) do |req|
+  throttle('throttle_api_media', limit: 30, period: 5.minutes) do |req|
     req.authenticated_user_id if req.post? && req.path.match?(%r{\A/api/v\d+/media\z}i)
   end
 
@@ -90,7 +90,7 @@ class Rack::Attack
     req.throttleable_remote_ip if req.post? && req.path == '/api/v1/accounts'
   end
 
-  throttle('throttle_authenticated_paging', limit: 300, period: 15.minutes) do |req|
+  throttle('throttle_authenticated_paging', limit: 500, period: 5.minutes) do |req|
     req.authenticated_user_id if req.paging_request?
   end
 

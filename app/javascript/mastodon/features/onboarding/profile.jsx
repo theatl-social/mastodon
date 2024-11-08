@@ -135,7 +135,7 @@ export const Profile = () => {
             <label htmlFor='note'><FormattedMessage id='onboarding.profile.note' defaultMessage='Bio' /></label>
             <span className='hint'><FormattedMessage id='onboarding.profile.note_hint' defaultMessage='You can @mention other people or #hashtags…' /></span>
             <div className='label_input'>
-              <textarea id='note' value={note} onChange={handleNoteChange} maxLength={500} />
+              <textarea id='note' value={note} onChange={handleNoteChange} maxLength={1500} />
             </div>
           </div>
 
