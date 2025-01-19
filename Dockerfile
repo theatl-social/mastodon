@@ -151,6 +151,7 @@ RUN \
     libpq-dev \
     libssl-dev \
     libtool \
+    libyaml-dev \
     meson \
     nasm \
     pkg-config \
